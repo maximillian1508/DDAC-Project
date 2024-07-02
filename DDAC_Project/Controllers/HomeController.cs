@@ -16,9 +16,14 @@ namespace DDAC_Project.Controllers
         public IActionResult Index()
         {
             return View();
-        }
-
-        public IActionResult Privacy()
+        }      
+        
+        public IActionResult AboutUs()
+        {
+            return View();
+        }        
+        
+        public IActionResult Features()
         {
             return View();
         }
