@@ -2,7 +2,77 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome Try</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div>
+    <div style="background-color: black; width: 100%; height: 500px; display: flex; flex-direction: row">
+        <div style="width: 50%; padding: 140px">
+            <h1 style="color: white">Take control of your finances</h1>
+            <p style="color: lightgray">Effortlessly manage your money with our powerful budgeting and expense tracking tools.</p>
+            <a class="btn btn-light text-dark" style="border: 1px solid black; margin-right:25px" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
+            <a class="btn btn-dark text-light" style="background-color: black; border: solid 1px white" sp-area="" asp-controller="Home" asp-action="AboutUs">Learn More</a>
+        </div>
+        <div style="width: 50%; padding: 50px 100px 50px 100px">
+            <img src="~/image/Fiscella-mascot.jpg" style="width:500px; height:400px; border-radius: 10px" />
+        </div>
+    </div>
+    <div style="width: 100%; margin: 0 auto; margin: 30px 0px 0px 0px">
+        <div style="display:flex; flex-direction: row">
+            <div>
+                <p style="font-size: 25px"><i class="fa-solid fa-dollar-sign"></i></p>
+                <p style="font-weight: bold; font-size: 18px">Manage Expense</p>
+                <p>Automatically track and categorize your expenses, giving you full visibility into your spending.</p>
+            </div>
+            <div style="margin: 0px 200px 0px 200px">
+                <p style="font-size: 25px"><i class="fa-solid fa-chart-bar"></i></p>
+                <p style="font-weight: bold; font-size: 18px">Budget Planning</p>
+                <p>Create and manage your budgets with ease, ensuring you stay on top of your spending.</p>
+            </div>
+            <div>
+                <p style="font-size: 25px"><i class="fa-solid fa-bullseye"></i></p>
+                <p style="font-weight: bold; font-size: 18px">Financial Goals</p>
+                <p>Set financial goals and track your progress, helping you achieve your savings and investment objectives.</p>
+            </div>
+        </div>
+        <div style="display:flex; flex-direction: row; margin: 70px 0px 30px 0px">
+            <div style="width: 50%; margin-right: 200px; padding-left: 200px">
+                <p style="font-size: 25px"><i class="fa-solid fa-chart-pie"></i></p>
+                <p style="font-weight: bold; font-size: 18px">Analysis</p>
+                <p>Gain insights with detailed reports and visualizations to understand your spending patterns and make informed financial decisions.</p>
+            </div>
+            <div style="width: 50%; padding-right: 200px">
+                <p style="font-size: 25px"><i class="fa-solid fa-people-arrows"></i></p>
+                <p style="font-weight: bold; font-size: 18px">Advisor Interaction</p>
+                <p>Connect with financial advisors for personalized recommendations and expert guidance to achieve your financial goals.</p>
+            </div>
+        </div>
+        <div style="background-color: #f0f0f0; display: flex; flex-direction: row; justify-content: center; height: 400px; padding: 50px">
+            <div style="background-color: white; margin: 25px 40px 25px 25px; padding: 15px; height: 240px">
+                <div style="display: flex; flex-direction: row">
+                    <img src="~/image/Avatar 1.jpeg" style="width:100px; height:100px; border-radius: 50%" />
+                    <p style="font-size:18px; font-weight:bold; padding: 40px 0px 20px 10px">James Lewis</p>
+                </div>
+                <p style="color: gray">"This app has completely transformed how I manage my finances.
+                    The expense tracking and budget planning features are incredibly user-friendly. Highly recommend!"</p>
+            </div>
+            <div style="background-color: white; margin: 25px 40px 25px 25px; padding: 15px; height: 240px">
+                <div style="display: flex; flex-direction: row">
+                    <img src="~/image/Avatar 2.jpeg" style="width:100px; height:100px; border-radius: 50%" />
+                    <p style="font-size:18px; font-weight:bold; padding: 40px 0px 20px 10px">Sophia Kim</p>
+                </div>
+                <p style="color: gray">
+                    "I love the financial goals feature! It keeps me motivated and on track.
+                    The advisor interaction is also a game-changer for personalized advice."
+                </p>
+            </div>
+            <div style="background-color: white; margin: 25px 40px 25px 25px; padding: 15px; height: 240px">
+                <div style="display: flex; flex-direction: row">
+                    <img src="~/image/Avatar 3.jpeg" style="width:100px; height:100px; border-radius: 50%" />
+                    <p style="font-size:18px; font-weight:bold; padding: 40px 0px 20px 10px">Michael Brown</p>
+                </div>
+                <p style="color: gray">
+                    "The detailed reports and visualizations have given me a clear picture of my spending habits.
+                    I've saved so much money since I started using this app."
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
