@@ -22,6 +22,11 @@ namespace DDAC_Project.Controllers
         {
             return View();
         }        
+
+        public IActionResult RedirectToContact()
+        {
+            return new RedirectResult(Url.Action("AboutUs") + "#contact");
+        }
         
         public IActionResult Features()
         {

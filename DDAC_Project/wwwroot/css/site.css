@@ -29,3 +29,12 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+footer .footer-link {
+    text-decoration: none;
+    color: white;
+}
+
+footer .footer-link:hover {
+    color: lightgrey;
+}
