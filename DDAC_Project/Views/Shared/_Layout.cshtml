@@ -4,17 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Fiscella</title>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/DDAC_Project.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/DDAC_Project.styles.css" asp-append-version="true" />
 </head>
-<body style="display: flex; flex-direction: column;" class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column" style="margin: 0; min-height:100vh;">
     <header class="sticky-top">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
             <div class="container-fluid d-flex justify-content-between px-3">
                 <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index" style="padding: 0">
-                    <img src="~/image/Fiscella.png" style="width:45px; height:45px;" /> 
+                    <img src="~/image/Fiscella.png" style="width:45px; height:45px;" />
                     <span class="ms-2" style="font-size: 1.75rem; margin: 0 auto; display: inline;">Fiscella</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -43,19 +43,36 @@
             </div>
         </nav>
     </header>
-    <div class="container flex-grow-1">
+    <div class="container" style="flex-grow: 1">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top container-fluid footer bg-dark text-white d-flex flex-row justify-content-between p-3 align-items-center">
-        <div class="d-flex">
-            <p class="m-0">&copy; 2024 Fiscella. All rights reserved.</p>
+    <footer class="border-top container-fluid footer bg-dark text-white d-flex flex-row justify-content-between p-3 py-4 align-items-center">
+        <div class="d-flex gap-4 flex-column ms-3 mb-1">
+            <ul class="ms-1" style="display:flex; line-height: normal; gap:1.5rem; margin: 0; padding: 0;">
+                <li>
+                    <a class="footer-link" asp-area="" asp-controller="Home" asp-action="RedirectToContact">
+                        Contact us
+                    </a>
+                </li>              
+                <li>
+                    <a class="footer-link" asp-area="" asp-controller="Home" asp-action="Features">
+                        Features
+                    </a>
+                </li>                
+                <li>
+                    <a class="footer-link" asp-area="" asp-controller="Home" asp-action="Index">
+                        Register
+                    </a>
+                </li>
+            </ul>
+            <span class="m-0" style="line-height:normal">&copy; 2024 Fiscella. All rights reserved.</span>
         </div>
         <a asp-area="" asp-controller="Home" asp-action="Index" class="fs-1" style="text-decoration:none; color:white">
-            <img src="~/image/Fiscella-white.png" style="height:60px; width: 60px" />                    
-            <span style="font-size: 1.75rem; margin: 0 auto; display: inline;">Fiscella</span>
+            <img src="~/image/Fiscella-white.png" style="height:60px; width: 60px" />
+            <span style="font-size: 1.75rem; margin: 0 auto; display: inline;">Fiscella</i></span>
         </a>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
