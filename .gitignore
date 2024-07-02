@@ -3,6 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# ignore redundant bootstrap
+/DDAC_Project/wwwroot/lib/bootstrap/dist/
+
 # dotenv files
 .env
 
