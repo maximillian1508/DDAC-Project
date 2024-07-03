@@ -9,5 +9,12 @@ namespace DDAC_Project.Areas.Identity.Data;
 // Add profile data for application users by adding properties to the DDAC_ProjectUser class
 public class DDAC_ProjectUser : IdentityUser
 {
+    [PersonalData]
+    public string ? FirstName { get; set; }
+
+    [PersonalData]
+    public string ? LastName { get; set; }
+
+    public string ? UserType { get; set; }
 }
 
