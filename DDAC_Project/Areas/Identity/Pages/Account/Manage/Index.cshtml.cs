@@ -56,8 +56,17 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Phone]
-            [Display(Name = "Phone number")]
+            [Required(ErrorMessage = "First name is required.")]
+            [Display(Name = "First Name")]
+            public string FirstName { get; set; }
+
+            [Required(ErrorMessage = "Last name is required.")]
+            [Display(Name = "Last Name")]
+            public string LastName { get; set; }
+
+            [Required(ErrorMessage = "Phone number is required.")]
+            [Phone(ErrorMessage = "Invalid phone number format.")]
+            [Display(Name = "Phone Number")]
             public string PhoneNumber { get; set; }
         }
 
@@ -70,7 +79,9 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
             };
         }
 
@@ -110,6 +121,16 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
                     return RedirectToPage();
                 }
             }
+
+            if (Input.FirstName != user.FirstName) { 
+                user.FirstName = Input.FirstName;
+            }
+
+            if (Input.LastName != user.LastName)
+            {
+                user.LastName = Input.LastName;
+            }
+            await _userManager.UpdateAsync(user);
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
