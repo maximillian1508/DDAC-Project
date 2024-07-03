@@ -8,5 +8,15 @@ namespace DDAC_Project.Controllers
         {
             return View();
         }
+
+        public IActionResult FinancialAnalysis()
+        {
+            return View();
+        }
+
+        public IActionResult SelectUser()
+        {
+            return View();
+        }
     }
 }
