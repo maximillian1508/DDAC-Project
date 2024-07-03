@@ -41,14 +41,16 @@ using (var scope = app.Services.CreateScope())
     {
         UserName = "admin@fiscella.com",
         Email = "admin@fiscella.com",
-        EmailConfirmed = true
+        EmailConfirmed = true,
+        UserType = "Admin"
     };
 
     var advisorUser = new DDAC_ProjectUser
     {
         UserName = "advisor@fiscella.com",
         Email = "advisor@fiscella.com",
-        EmailConfirmed = true
+        EmailConfirmed = true,
+        UserType = "Advisor"
     };
 
     if (await userManager.FindByEmailAsync(adminUser.Email) == null)
