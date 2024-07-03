@@ -15,6 +15,6 @@ public class DDAC_ProjectUser : IdentityUser
     [PersonalData]
     public string ? LastName { get; set; }
 
-    public string ? UserType { get; set; }
+    public required string UserType { get; set; }
 }
 
