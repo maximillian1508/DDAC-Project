@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Fiscella</title>
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/DDAC_Project.styles.css" asp-append-version="true" />
+</head>
+<body class="d-flex flex-column" style="margin: 0; min-height:100vh;">
+    <header style="padding: 0.5rem 1rem;">
+        <div style="display: flex; flex-direction: row; align-items: center">
+            <button style="padding: 0 7.5px; font-size: 1.75rem; width: fit-content; border: solid 0.75px grey; border-radius: 10px; background-color: transparent; margin-right: 2rem" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <p style="margin: 0; padding: 0; font-size: 1.25rem; font-weight: 500">Hello, <span id="user_name">Maximillian Leonard</span></p>
+        </div>
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasExampleLabel">Offcanvas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div>
+                    Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
+                </div>
+                <a asp-controller="Home" asp-action="Index">Home</a>
+                <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid" style="flex-grow: 1; padding: 0;">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
