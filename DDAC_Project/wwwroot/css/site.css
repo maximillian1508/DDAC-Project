@@ -38,3 +38,17 @@ footer .footer-link {
 footer .footer-link:hover {
     color: lightgrey;
 }
+
+.sidebar-nav {
+    color: grey;
+    border-radius: 5px;
+    width: 100%
+}
+
+.sidebar-nav:hover {
+    background-color: lightgrey;
+}
+
+.sidebar-nav i{
+    margin: 0 0.75rem;
+}

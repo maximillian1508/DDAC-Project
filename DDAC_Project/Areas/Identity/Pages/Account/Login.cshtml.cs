@@ -22,11 +22,13 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<DDAC_ProjectUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly UserManager<DDAC_ProjectUser> _userManager;
 
-        public LoginModel(SignInManager<DDAC_ProjectUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<DDAC_ProjectUser> signInManager, ILogger<LoginModel> logger, UserManager<DDAC_ProjectUser> userManager)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -104,7 +106,6 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/");
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
@@ -116,11 +117,26 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        var user = await _userManager.GetUserAsync(User);
+                        if (user != null)
+                        {
+                            if (await _userManager.IsInRoleAsync(user, "Admin"))
+                            {
+                                return RedirectToAction("Index", "Admin");
+                            }
+                            else if (await _userManager.IsInRoleAsync(user, "Advisor"))
+                            {
+                                return RedirectToAction("Index", "Advisor");
+                            }
+                            else if (await _userManager.IsInRoleAsync(user, "Client"))
+                            {
+                                return RedirectToAction("Index", "Client");
+                            }
+                        }
+                    }
                     return LocalRedirect(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
                 }
                 if (result.IsLockedOut)
                 {
