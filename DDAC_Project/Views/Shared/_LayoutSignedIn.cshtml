@@ -41,9 +41,9 @@
                             <a id="manage" class="nav-link sidebar-nav" asp-area="Identity" asp-page="/Account/Manage/Index" title="Profile"><i class="fa-solid fa-user"></i>Profile</a>
                         </li>
                         <li class="nav-item" style="margin-top: auto">
-                            <hr style="width: 100%; border: solid 1px grey"/>
+                            <hr style="width: 100%; border: solid 1px grey" />
                             <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-                                <button class="nav-link sidebar-nav" style="text-align:left" type="submit"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</button>
+                                <button class="nav-link sidebar-nav" type="submit"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</button>
                             </form>
                         </li>
                     </ul>

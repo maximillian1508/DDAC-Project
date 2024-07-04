@@ -42,13 +42,16 @@ footer .footer-link:hover {
 .sidebar-nav {
     color: grey;
     border-radius: 5px;
-    width: 100%
+    width: 100%;
+    text-align: center;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
 .sidebar-nav:hover {
-    background-color: lightgrey;
+    background-color: grey;
 }
 
 .sidebar-nav i{
-    margin: 0 0.75rem;
+    width: 100%;
 }
