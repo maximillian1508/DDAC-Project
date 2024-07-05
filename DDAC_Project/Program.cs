@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using DDAC_Project.Data;
 using DDAC_Project.Areas.Identity.Data;
 using DDAC_Project.Constants;
+using DDAC_Project.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DDAC_ProjectContextConnection") ?? throw new InvalidOperationException("Connection string 'DDAC_ProjectContextConnection' not found.");
@@ -30,6 +31,7 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<DDAC_ProjectUser>>();
+    var dbContext = scope.ServiceProvider.GetRequiredService<DDAC_ProjectContext>();
 
     // Seed Roles
     await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
@@ -61,8 +63,23 @@ using (var scope = app.Services.CreateScope())
 
     if (await userManager.FindByEmailAsync(advisorUser.Email) == null)
     {
-        await userManager.CreateAsync(advisorUser, "Advisor123!");
-        await userManager.AddToRoleAsync(advisorUser, UserRoles.Advisor);
+        var result = await userManager.CreateAsync(advisorUser, "Advisor123!");
+        if (result.Succeeded)
+        {
+            var createdAdvisorUser = await userManager.FindByEmailAsync(advisorUser.Email);
+            if (createdAdvisorUser != null)
+            {
+                var advisor = new Advisor
+                {
+                    User = createdAdvisorUser,
+                    UserId = createdAdvisorUser.Id,
+                };
+
+                dbContext.Advisors.Add(advisor);
+                await dbContext.SaveChangesAsync();
+            }
+            await userManager.AddToRoleAsync(advisorUser, UserRoles.Advisor);
+        }
     }
 }
 
