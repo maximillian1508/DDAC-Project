@@ -19,6 +19,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration.UserSecrets;
+using DDAC_Project.Models;
+using Microsoft.EntityFrameworkCore;
+using DDAC_Project.Data;
 
 namespace DDAC_Project.Areas.Identity.Pages.Account
 {
@@ -30,13 +34,16 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<DDAC_ProjectUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly DDAC_ProjectContext _context;
 
         public RegisterModel(
             UserManager<DDAC_ProjectUser> userManager,
             IUserStore<DDAC_ProjectUser> userStore,
             SignInManager<DDAC_ProjectUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            DDAC_ProjectContext context
+            )
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +51,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
         }
 
         /// <summary>
@@ -145,6 +153,16 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
                     await _userManager.AddToRoleAsync(user, Constants.UserRoles.Client);
 
                     var userId = await _userManager.GetUserIdAsync(user);
+
+                    var client = new Client
+                    {
+                        User = user,
+                        UserId = userId,
+                    };
+
+                    await _context.AddAsync(client);
+                    await _context.SaveChangesAsync();
+
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(

@@ -12,7 +12,7 @@ namespace DDAC_Project.Models
         [Required]
         public required string UserId { get; set; }
 
-        public int AdvisorId { get; set; }
+        public int ? AdvisorId { get; set; }
 
         [ForeignKey("AdvisorId")]  
         public virtual Advisor ? Advisor { get; set; }

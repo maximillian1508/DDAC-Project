@@ -11,7 +11,7 @@
     @if (User.IsInRole(UserRoles.Admin))
     {
         <li class="nav-item">
-            <a class="nav-link sidebar-nav" is-active-route aria-current="page" asp-controller="Admin" asp-action="Index"><i class="fa-solid fa-table-cells-large"></i>Dashboard</a>
+            <a class="nav-link sidebar-nav" aria-current="page" asp-controller="Admin" asp-action="Index"><i class="fa-solid fa-table-cells-large"></i>Dashboard</a>
         </li>
         <li class="nav-item">
             <a class="nav-link sidebar-nav" aria-current="page" asp-controller="Admin" asp-action="ManageUser"><i class="fa-solid fa-users-gear"></i>Manage User</a>
@@ -20,7 +20,7 @@
     else if (User.IsInRole(UserRoles.Advisor))
     {
         <li class="nav-item">
-            <a class="nav-link sidebar-nav" is-active-route aria-current="page" asp-controller="Advisor" asp-action="Index"><i class="fa-solid fa-table-cells-large"></i>Dashboard</a>
+            <a class="nav-link sidebar-nav" aria-current="page" asp-controller="Advisor" asp-action="Index"><i class="fa-solid fa-table-cells-large"></i>Dashboard</a>
         </li>
         <li class="nav-item">
             <a class="nav-link sidebar-nav" aria-current="page" asp-controller="Advisor" asp-action="SelectUser"><i class="fa-solid fa-chart-pie"></i>Analysis</a>
@@ -29,7 +29,7 @@
     else if (User.IsInRole(UserRoles.Client))
     {
         <li class="nav-item">
-            <a class="nav-link sidebar-nav" is-active-route aria-current="page" asp-controller="Client" asp-action="Index"><i class="fa-solid fa-table-cells-large"></i>Dashboard</a>
+            <a class="nav-link sidebar-nav" aria-current="page" asp-controller="Client" asp-action="Index"><i class="fa-solid fa-table-cells-large"></i>Dashboard</a>
         </li>
         <li class="nav-item">
             <a class="nav-link sidebar-nav" aria-current="page" asp-controller="Client" asp-action="Analysis"><i class="fa-solid fa-chart-pie"></i>Analysis</a>
