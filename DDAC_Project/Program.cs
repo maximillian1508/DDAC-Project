@@ -81,6 +81,8 @@ using (var scope = app.Services.CreateScope())
                 {
                     User = createdAdvisorUser,
                     UserId = createdAdvisorUser.Id,
+                    YearsOfExperience = "2",
+                    Specialization = "Default",
                 };
 
                 dbContext.Advisors.Add(advisor);
