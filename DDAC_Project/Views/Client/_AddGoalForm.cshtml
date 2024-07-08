@@ -1,0 +1,17 @@
+﻿@model DDAC_Project.Models.Goal
+@{
+}
+<h2 class="mb-4">Add a New Goal</h2>
+<form asp-action="AddGoal" method="post" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 100%; padding: 25px 20px">
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label" style="font-weight: 500">Goal Name</label>
+        <input class="form-control" asp-for="Name" placeholder="Enter goal name">
+        <span asp-validation-for="Name"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="TargetAmount" class="form-label" style="font-weight: 500">Target Amount</label>
+        <input asp-for="TargetAmount" type="number" class="form-control" placeholder="Enter target amount" value="">
+        <span asp-validation-for="TargetAmount"></span>
+    </div>
+    <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Add a new goal</button>
+</form>

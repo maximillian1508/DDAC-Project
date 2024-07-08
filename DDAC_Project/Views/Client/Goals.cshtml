@@ -1,5 +1,56 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using System.Globalization
+@model List<DDAC_Project.Models.Goal>
 @{
+    ViewData["Title"] = "Financial Goals";
 }
+
+<div style="display: flex; margin: 1em 0; justify-content: space-between; height:70vh">
+    <div style="width: 60%">
+        <h2 class="mb-4">Your Financial Goals</h2>
+        <div style="overflow-y: auto; height:100%; position:relative">
+            <table class="table table-hover">
+                <thead style="position: sticky; top:0">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Target Amount</th>
+                        <th scope="col">Progress</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var goal in Model)
+                    {
+                        var culture = new CultureInfo("fr-FR");
+                        var progressPercentage = ((goal.TargetAmount /3) / goal.TargetAmount) * 100;
+                        var formattedPercentage = progressPercentage.ToString("F2", CultureInfo.InvariantCulture);
+                        var targetAmount = goal.TargetAmount.ToString("F2", culture); 
+                        <tr>
+                            <th style="vertical-align:middle" scope="row">@(Model.IndexOf(goal) + 1)</th>
+                            <td style="vertical-align:middle">@goal.Name</td>
+                            <td style="vertical-align:middle"> RM @goal.TargetAmount</td>
+                            <td style="vertical-align:middle; text-align:center">
+                                <div class="progress" role="progressbar">
+                                    <div class="progress-bar bg-dark" style="width: @formattedPercentage%">
+                                    </div>
+                                </div>
+                                RM @((goal.TargetAmount / 3).ToString("F2", culture))
+                            </td>
+                            <td style="text-align: center; vertical-align:middle">
+                                <a asp-action="EditGoal" asp-controller="Client" asp-route-GoalId="@goal.GoalId" ><i class="fa-solid fa-pen-to-square"></i></a>
+                            </td>
+                            <td style="text-align: center; vertical-align:middle">
+                                <a asp-action="DeleteGoal" asp-controller="Client" asp-route-GoalId="@goal.GoalId" style="color: red"><i class="fa-solid fa-trash-can"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="width: 35%">
+        @await Html.PartialAsync("_AddGoalForm", ViewBag.NewGoal as Goal)
+    </div>
+
+</div>
