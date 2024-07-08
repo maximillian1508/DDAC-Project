@@ -1,37 +1,233 @@
-﻿@model DDAC_Project.Views.Advisor.FinancialAnalysisModel
+﻿@model DDAC_Project.Controllers.AdvisorController.FinancialAnalysisModel
 @{
+    var fullName = Model.FullName;
 }
 
-<h2 style="padding: 15px 0px 15px 125px; color: dimgray">Financial Analysis</h2>
+<h2 style="padding: 15px 0px 15px 95px; color: dimgray">Financial Analysis of @fullName</h2>
 <div class="container" style="width:90%">
     <div class="row" style="column-gap: 4em; width:100%; margin: 0 auto 0 auto; justify-content: center">
-        <div class="col-7" style="width" 100%>
+        <div class="col-7">
             <div class="row" style="justify-content: space-between; text-align: center">
                 <div class="col-4" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); width: 30%; border-radius: 5px; height: 25vh">
                     <div style="background-color: #f0f0f0">
                         <h4 style="padding: 10px">Total Income</h4>
                     </div>
-                    <p style="padding: 10px">10</p>
+                    <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Model.TotalIncome.ToString("N2")</p>
                 </div>
-                <div class="col-4"  style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border-radius: 5px; width: 30%; height: 25vh;">
+                <div class="col-4" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border-radius: 5px; width: 30%; height: 25vh;">
                     <div style="background-color: #f0f0f0">
                         <h4 style="padding: 10px">Total Expense</h4>
-                    </div>
-                    <p style="padding: 10px">10</p>
+                    </div>                                                                                              <!--Math.Abs is to remove negative sign (- sign)-->
+                    <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Math.Abs(Model.TotalExpense).ToString("N2")</p>
                 </div>
-                <div class="col-4"  style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border-radius: 5px; width: 30%; height: 25vh">
+                <div class="col-4" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border-radius: 5px; width: 30%; height: 25vh">
                     <div style="background-color: #f0f0f0">
                         <h4 style="padding: 10px">Net Balance</h4>
                     </div>
-                    <p style="padding: 10px">10</p>
+                    <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Model.NetBalance.ToString("N2")</p>
                 </div>
             </div>
             <div class="row" style="margin-top: 2em">
-                <div class="col-6" style="border: solid 1px; height: 45.5vh"></div>
-                <div class="col-6" style="border: solid 1px; border-left: none; height: 45.5vh"></div>
+                <div class="col-6" style="border: solid 1px; height: 45.5vh">
+                    <canvas id="incomePieChart"></canvas>
+
+                    <script>
+                        var incomeCtx = document.getElementById('incomePieChart').getContext('2d');
+                        var incomePieChart = new Chart(incomeCtx, {
+                            type: 'pie',
+                            data: {
+                                labels: @Html.Raw(Json.Serialize(Model.CategoryIncomeData.Select(c => c.CategoryName))),
+                                datasets: [{
+                                    data: @Html.Raw(Json.Serialize(Model.CategoryIncomeData.Select(c => c.TotalIncome))),
+                                    backgroundColor: [
+                                        'rgba(54, 162, 235, 0.2)',
+                                        'rgba(255, 99, 132, 0.2)',
+                                        'rgba(255, 206, 86, 0.2)',
+                                        'rgba(75, 192, 192, 0.2)',
+                                        'rgba(153, 102, 255, 0.2)',
+                                        'rgba(255, 159, 64, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Income Details by Category'
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (context) {
+                                                let label = context.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                if (context.raw !== null) {
+                                                    label += 'RM ' + context.raw.toFixed(2);
+                                                }
+                                                return label;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    </script>
+                </div>
+                <div class="col-6" style="border: solid 1px; border-left: none; height: 45.5vh">
+                    <canvas id="expensePieChart"></canvas>
+
+                    <script>
+                        var expenseCtx = document.getElementById('expensePieChart').getContext('2d');
+                        var expensePieChart = new Chart(expenseCtx, {
+                            type: 'pie',
+                            data: {
+                                labels: @Html.Raw(Json.Serialize(Model.CategoryExpenseData.Select(c => c.CategoryName))),
+                                datasets: [{
+                                    data: @Html.Raw(Json.Serialize(Model.CategoryExpenseData.Select(c => c.TotalExpense))),
+                                    backgroundColor: [
+                                        'rgba(255, 215, 0, 0.2)',
+                                        'rgba(0, 128, 0, 0.2)',
+                                        'rgba(255, 165, 0, 0.2)',
+                                        'rgba(70, 130, 180, 0.2)',
+                                        'rgba(218, 112, 214, 0.2)',
+                                        'rgba(255, 99, 71, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Expense Details by Category'
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (context) {
+                                                let label = context.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                if (context.raw !== null) {
+                                                    label += 'RM ' + context.raw.toFixed(2);
+                                                }
+                                                return label;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    </script>
+                </div>
             </div>
         </div>
-        <div class="col-4" style="height: 75vh; border:groove"></div>
-        <div class="row" style="width: 75%; height: 50vh; border: groove; margin: 2em auto"></div>
+        <div class="col-4" style="height: 75vh; border:groove">
+            <h3 style="text-align: center">Comments</h3>
+            <div id="comment-container" class="comment-container" style="overflow-y: auto; height: calc(100% - 100px);">
+                @foreach (var comment in Model.CommentHistory)
+                {
+                    <div class="comment" style="margin-bottom: 1em; display: flex; justify-content: space-between;">
+                        <div class="comment-text" style="max-width: 70%; word-wrap: break-word;">@comment.CommentText</div>
+                        <div class="comment-date" style="text-align: right; font-size: 0.9em; color: #777;">@comment.Date.ToString("MMM dd, yyyy HH:mm")</div>
+                    </div>
+                }
+            </div>
+            <form id="comment-form">
+                <input type="hidden" name="clientId" value="@Model.ClientId" />
+                <div class="input-group" style="margin-top: 1em;">
+                    <input type="text" class="form-control" name="commentText" id="commentText" placeholder="Add a comment" aria-label="Add a comment" required>
+                    <button class="btn btn-outline-secondary" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+        @section Scripts {
+            <script>
+                $(document).ready(function () {
+                    $('#comment-form').on('submit', function (e) {
+                        e.preventDefault();
+                        var formData = $(this).serialize();
+                        $.ajax({
+                            url: '@Url.Action("AddComment", "Advisor")',
+                            type: 'POST',
+                            data: formData,
+                            success: function (result) {
+                                if (result.success) {
+                                    var newComment = '<div class="comment" style="margin-bottom: 1em; display: flex; justify-content: space-between;">' +
+                                        '<div class="comment-text" style="max-width: 70%; word-wrap: break-word;">' + result.commentText + '</div>' +
+                                        '<div class="comment-date" style="text-align: right; font-size: 0.9em; color: #777;">' + result.date + '</div>' +
+                                        '</div>';
+                                    $('#comment-container').prepend(newComment);
+                                    $('#commentText').val('');
+                                } else {
+                                    alert('Error adding comment: ' + result.message);
+                                }
+                            },
+                            error: function (error) {
+                                console.log('Error:', error);
+                                alert('An error occurred while adding the comment.');
+                            }
+                        });
+                    });
+                });
+            </script>
+        }
+        <div class="row" style="width: 75%; height: 50vh; border: groove; margin: 2em auto; text-align: center">
+            <div style="overflow-y: auto; height: 100%; position:relative">
+                <table class="table table-striped">
+                    <h3>Transaction History</h3>
+                    <thead style="position: sticky; top:0">
+                        <tr>
+                            <th>Date</th>
+                            <th>Goal</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var transaction in Model.TransactionHistory)
+                        {
+                            <tr>
+                                <td>@transaction.Date.ToShortDateString()</td>
+                                <td>@(transaction.GoalName ?? "-")</td>
+                                <td>@transaction.CategoryName</td>
+                                <td class="@(transaction.Amount >= 0 ? "text-success" : "text-danger")">
+                                    RM @transaction.Amount.ToString("N2")
+                                </td>
+                                <td>@transaction.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
     </div>
 </div>

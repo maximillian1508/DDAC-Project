@@ -1,6 +1,7 @@
 ﻿using DDAC_Project.Areas.Identity.Data;
 using DDAC_Project.Areas.Identity.Pages.Account.Manage;
 using DDAC_Project.Data;
+using DDAC_Project.Models;
 using DDAC_Project.Views.Advisor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -33,6 +34,19 @@ namespace DDAC_Project.Controllers
 
         }
 
+        public class FinancialAnalysisModel
+        {
+            public string FullName { get; set; }
+            public decimal TotalIncome { get; set; }
+            public decimal TotalExpense { get; set; }
+            public decimal NetBalance { get; set; }
+            public List<IncomeCategoryData> CategoryIncomeData { get; set; }
+            public List<ExpenseCategoryData> CategoryExpenseData { get; set; }
+            public List<TransactionHistoryItem> TransactionHistory { get; set; }
+            public List<CommentModel> CommentHistory { get; set; }
+            public int ClientId { get; set; }
+        }
+
         public class UserModel
         {
             public string FirstName { get; set; }
@@ -59,6 +73,33 @@ namespace DDAC_Project.Controllers
         {
             public string Name { get; set; }
             public decimal Assets { get; set; }
+        }
+
+        public class IncomeCategoryData
+        {
+            public string CategoryName { get; set; }
+            public decimal TotalIncome { get; set; }
+        }
+
+        public class ExpenseCategoryData
+        {
+            public string CategoryName { get; set; }
+            public decimal TotalExpense { get; set; }
+        }
+
+        public class TransactionHistoryItem
+        {
+            public string GoalName { get; set; }
+            public string CategoryName { get; set; }
+            public decimal Amount { get; set; }
+            public DateTime Date { get; set; }
+            public string Description { get; set; }
+        }
+
+        public class CommentModel
+        {
+            public string CommentText { get; set; }
+            public DateTime Date { get; set; }
         }
 
         public async Task<IActionResult> Index()
@@ -116,9 +157,89 @@ namespace DDAC_Project.Controllers
 
         public async Task<IActionResult> FinancialAnalysis(int clientId)
         {
-            ViewBag.ClientId = clientId;
-            return View();
+            //var user = await _userManager.GetUserAsync(User);
+            var advisorId = Convert.ToInt32(HttpContext.Session.GetInt32("AdvisorId"));
+
+            if (advisorId == 0)
+            {
+                return Challenge();
+            }
+
+            var client = await _context.Clients.Include(c => c.User).FirstOrDefaultAsync(c => c.ClientId == clientId);
+            if (client == null)
+            {
+                return NotFound();
+            }
+
+            var fullName = $"{client.User.FirstName} {client.User.LastName}";
+
+            var transactions = await _context.Transactions.Where(t => t.ClientId == clientId).ToListAsync();
+            var totalIncome = transactions.Where(t => t.Amount > 0).Sum(t => t.Amount);
+            var totalExpense = transactions.Where(t => t.Amount < 0).Sum(t => t.Amount);
+            var netBalance = totalIncome + totalExpense;
+            var categoryIncomeData = await _context.Categories
+                .GroupJoin(
+                    _context.Transactions.Where(t => t.ClientId == clientId && t.Amount > 0),
+                    c => c.CategoryId,
+                    t => t.CategoryId,
+                    (c, ts) => new IncomeCategoryData
+                    {
+                        CategoryName = c.Name,
+                        TotalIncome = ts.Sum(t => t.Amount)
+                    })
+                .Where(c => c.TotalIncome > 0)
+                .ToListAsync();
+            var categoryExpenseData = await _context.Categories
+                .GroupJoin(
+                    _context.Transactions.Where(t => t.ClientId == clientId && t.Amount < 0),
+                    c => c.CategoryId,
+                    t => t.CategoryId,
+                    (c, ts) => new ExpenseCategoryData
+                    {
+                        CategoryName = c.Name,
+                        TotalExpense = ts.Sum(t => t.Amount)
+                    })
+                .Where(c => c.TotalExpense < 0)
+                .ToListAsync();
+            var transactionHistory = await _context.Transactions
+                .Where(t => t.ClientId == clientId)
+                .OrderByDescending(t => t.Date)
+                .Take(10) // Limit to the last 10 transactions
+                .Select(t => new TransactionHistoryItem
+                {
+                    GoalName = t.Goal.Name,
+                    CategoryName = t.Category.Name,
+                    Amount = t.Amount,
+                    Date = t.Date,
+                    Description = t.Description
+                })
+                .ToListAsync();
+            var commentHistory = await _context.Comments
+                .Where(c => c.ClientId == clientId)
+                .OrderByDescending(c => c.Date)
+                .Select(c => new CommentModel
+                {
+                    CommentText = c.CommentText,
+                    Date = c.Date
+                })
+                .ToListAsync();
+
+            var model = new FinancialAnalysisModel
+            {
+                FullName = fullName,
+                TotalIncome = totalIncome,
+                TotalExpense = totalExpense,
+                NetBalance = netBalance,
+                CategoryIncomeData = categoryIncomeData,
+                CategoryExpenseData = categoryExpenseData,
+                TransactionHistory = transactionHistory,
+                CommentHistory = commentHistory,
+                ClientId = clientId
+        };
+
+            return View(model);
         }
+
 
         public async Task<IActionResult> SelectUser()
         {
@@ -144,6 +265,48 @@ namespace DDAC_Project.Controllers
             return View(assignedClients);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int clientId, string commentText)
+        {
+            if (string.IsNullOrWhiteSpace(commentText))
+            {
+                return Json(new { success = false, message = "Comment text cannot be empty." });
+            }
 
+            var advisorId = Convert.ToInt32(HttpContext.Session.GetInt32("AdvisorId"));
+
+            if (advisorId == 0)
+            {
+                return Json(new { success = false, message = "Unauthorized." });
+            }
+
+            var client = await _context.Clients.FindAsync(clientId);
+            var advisor = await _context.Advisors.FindAsync(advisorId);
+
+            if (client == null || advisor == null)
+            {
+                return Json(new { success = false, message = "Client or Advisor not found." });
+            }
+
+            var comment = new Comment
+            {
+                ClientId = clientId,
+                AdvisorId = advisorId,
+                CommentText = commentText,
+                Date = DateTime.Now,
+                Client = client,
+                Advisor = advisor
+            };
+
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                commentText = comment.CommentText,
+                date = comment.Date.ToString("MMM dd, yyyy HH:mm")
+            });
+        }
     }
 }

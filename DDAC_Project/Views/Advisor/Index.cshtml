@@ -88,7 +88,7 @@
             {
                 <div style="display: flex; flex-direction: row; justify-content: space-between; padding: 10px">
                     <p><i class="fa-regular fa-user"></i>&nbsp;&nbsp;&nbsp;@($"{client.FirstName} {client.LastName}")</p>
-                    <a asp-controller="Advisor" asp-action="FinancialAnalysis" asp-route-clientId="@client.ClientID" style="color:black; font-size: 20px; margin-left: auto">
+                    <a asp-controller="Advisor" asp-action="FinancialAnalysis" asp-route-clientId="@client.ClientID" asp-route-fullName="@($"{client.FirstName} {client.LastName}")" style="color:black; font-size: 20px; margin-left: auto">
                         <i class="fa-solid fa-chart-pie"></i>
                     </a>
                 </div>

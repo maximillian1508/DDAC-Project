@@ -7,7 +7,7 @@
     <div style="display: flex; flex-direction: row; justify-content: space-around; height: 400px; padding: 50px">
         @foreach (var user in Model)
         {
-            <a href="~/Advisor/FinancialAnalysis?clientId=@user.ClientID" style="text-decoration: none; color: inherit; height: fit-content">
+            <a href="~/Advisor/FinancialAnalysis?clientId=@user.ClientID&fullName=@user.FirstName @user.LastName" style="text-decoration: none; color: inherit; height: fit-content">
                 <div style="background-color: white; width: 330px; height: 250px; padding: 15px">
                     <div style="display: flex; flex-direction: row; margin-bottom: 10px">
                         <img src="~/image/Avatar 4.jpeg" style="max-width: 40%; height:100px; border-radius: 50%; object-fit: contain" />
