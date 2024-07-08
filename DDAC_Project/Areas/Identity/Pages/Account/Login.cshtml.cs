@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using DDAC_Project.Data;
 
 namespace DDAC_Project.Areas.Identity.Pages.Account
 {
@@ -23,12 +25,14 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
         private readonly SignInManager<DDAC_ProjectUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly UserManager<DDAC_ProjectUser> _userManager;
+        private readonly DDAC_ProjectContext _context;
 
-        public LoginModel(SignInManager<DDAC_ProjectUser> signInManager, ILogger<LoginModel> logger, UserManager<DDAC_ProjectUser> userManager)
+        public LoginModel(DDAC_ProjectContext context, SignInManager<DDAC_ProjectUser> signInManager, ILogger<LoginModel> logger, UserManager<DDAC_ProjectUser> userManager)
         {
             _signInManager = signInManager;
             _logger = logger;
             _userManager = userManager;
+            _context = context;
         }
 
         /// <summary>
@@ -120,6 +124,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
                     if (User.Identity.IsAuthenticated)
                     {
                         var user = await _userManager.GetUserAsync(User);
+
                         if (user != null)
                         {
                             if (await _userManager.IsInRoleAsync(user, "Admin"))
@@ -128,10 +133,22 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
                             }
                             else if (await _userManager.IsInRoleAsync(user, "Advisor"))
                             {
+                                var advisorId = await _context.Advisors
+                                   .Where(c => c.UserId == user.Id)
+                                   .Select(c => c.AdvisorId)
+                                   .FirstOrDefaultAsync();
+                                Console.WriteLine(advisorId);
+                                HttpContext.Session.SetInt32("AdvisorId", advisorId);
                                 return RedirectToAction("Index", "Advisor");
                             }
                             else if (await _userManager.IsInRoleAsync(user, "Client"))
                             {
+                                var clientId = await _context.Clients
+                                                       .Where(c => c.UserId == user.Id)
+                                                       .Select(c => c.ClientId)
+                                                       .FirstOrDefaultAsync();
+                                Console.WriteLine(clientId);
+                                HttpContext.Session.SetInt32("ClientId", clientId);
                                 return RedirectToAction("Index", "Client");
                             }
                         }
