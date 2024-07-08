@@ -2,7 +2,7 @@
 @{
 }
 
-<div style="display: flex; flex-direction: row; margin: 40px; justify-content: center">
+<div style="display: flex; flex-direction: row; margin: 40px; justify-content: center; text-align: center">
     <div style="border: groove; border-radius: 5px; width: 350px; height: 150px">
         <div style="background-color: #f0f0f0">
             <h5 style="padding: 10px">Total Assigned Clients</h5>
@@ -74,10 +74,10 @@
     </div>
     <div style="border: groove; border-radius: 5px; width: 40%; margin-left: 100px">
         <div style="background-color: #f0f0f0">
-            <h4 style="padding: 10px">Assigned Users</h4>
-            <p style="padding: 10px">Users under you.</p>
+            <h4 style="padding: 10px">Assigned Clients</h4>
+            <p style="padding: 10px">Client(s) under you.</p>
         </div>
-        <p style="padding: 10px">User List</p>
+        <p style="padding: 10px">Client List(s)</p>
         @if (!Model.AssignedClients.Any())
         {
             <p style="padding: 10px">No clients assigned yet.</p>
