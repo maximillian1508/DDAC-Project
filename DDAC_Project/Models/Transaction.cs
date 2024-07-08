@@ -15,8 +15,7 @@ namespace DDAC_Project.Models
         [Required]
         public required int CategoryId { get; set; }
         
-        [Required]
-        public required int GoalId { get; set; }
+        public int ? GoalId { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -35,6 +34,6 @@ namespace DDAC_Project.Models
         public virtual required Category Category { get; set; } 
         
         [ForeignKey("ClientId")]
-        public virtual required Goal Goal { get; set; }
+        public virtual Goal ? Goal { get; set; }
     }
 }
