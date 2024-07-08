@@ -1,43 +1,23 @@
-﻿@page
-@model DDAC_Project.Views.Advisor.SelectUserModel
+﻿@model List<DDAC_Project.Controllers.AdvisorController.UserModel>
 @{
 }
 
 <h2 style="padding: 15px 0px 15px 115px; color: dimgray">Select User</h2>
 <div style="background-color: #f0f0f0; margin-bottom: 75px">
     <div style="display: flex; flex-direction: row; justify-content: space-around; height: 400px; padding: 50px">
-        <a href="~/Advisor/FinancialAnalysis" style="text-decoration: none; color: inherit; height: fit-content">
-            <div style="background-color: white; width: 330px; height: 250px; padding: 15px">
-                <div style="display: flex; flex-direction: row; margin-bottom: 10px">
-                    <img src="~/image/Avatar 4.jpeg" style="max-width: 40%; height:100px; border-radius: 50%; object-fit: contain" />
-                    <p style="font-size:18px; font-weight:bold; padding: 40px 0px 20px 10px">James Lewis</p>
+        @foreach (var user in Model)
+        {
+            <a href="~/Advisor/FinancialAnalysis?clientId=@user.ClientID" style="text-decoration: none; color: inherit; height: fit-content">
+                <div style="background-color: white; width: 330px; height: 250px; padding: 15px">
+                    <div style="display: flex; flex-direction: row; margin-bottom: 10px">
+                        <img src="~/image/Avatar 4.jpeg" style="max-width: 40%; height:100px; border-radius: 50%; object-fit: contain" />
+                        <p style="font-size:18px; font-weight:bold; padding: 40px 0px 20px 10px">@user.FirstName @user.LastName</p>
+                    </div>
+                    <p style="color: gray">Client ID: @user.ClientID</p>
+                    <p style="color: gray">Email: @user.Email</p>
+                    <p style="color: gray">Phone Number: @user.PhoneNumber</p>
                 </div>
-                <p style="color: gray">Client ID:</p>
-                <p style="color: gray">Email:</p>
-                <p style="color: gray">Phone Number:</p>
-            </div>
-        </a>
-        <a href="~/Advisor/FinancialAnalysis" style="text-decoration: none; color: inherit; height: fit-content">
-            <div style="background-color: white; width: 330px; height: 250px; padding: 15px;">
-                <div style="display: flex; flex-direction: row; margin-bottom: 10px">
-                    <img src="~/image/Avatar 4.jpeg" style="max-width: 40%; height:100px; border-radius: 50%; object-fit: contain" />
-                    <p style="font-size:18px; font-weight:bold; padding: 40px 0px 20px 10px">Sophia Kim</p>
-                </div>
-                <p style="color: gray">Client ID:</p>
-                <p style="color: gray">Email:</p>
-                <p style="color: gray">Phone Number:</p>
-            </div>
-        </a>
-        <a href="~/Advisor/FinancialAnalysis" style="text-decoration: none; color: inherit; height: fit-content">
-            <div style="background-color: white; width: 330px; height: 250px; padding: 15px; ">
-                <div style="display: flex; flex-direction: row; margin-bottom: 10px">
-                    <img src="~/image/Avatar 4.jpeg" style="max-width: 40%; height:100px; border-radius: 50%; object-fit:contain" />
-                    <p style="font-size:18px; font-weight:bold; padding: 40px 0px 20px 10px">Michael Brown</p>
-                </div>
-                <p style="color: gray">Client ID:</p>
-                <p style="color: gray">Email:</p>
-                <p style="color: gray">Phone Number:</p>
-            </div>
-        </a>
+            </a>
+        }
     </div>
 </div>
