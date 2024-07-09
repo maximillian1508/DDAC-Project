@@ -45,12 +45,22 @@
                         <td>@user.Email</td>
                         <td>@user.PhoneNumber</td>
                         <td>@user.UserType</td>
-                        <td style="text-align: center; vertical-align:middle">
-                            <a asp-action="EditData" asp-controller="Admin" asp-route-UserId="@user.UserId"><i class="fa-solid fa-pen-to-square"></i></a>
-                        </td>
-                        <td style="text-align: center; vertical-align:middle">
-                            <a asp-action="DeleteData" asp-controller="Admin" asp-route-UserId="@user.UserId" style="color: red"><i class="fa-solid fa-trash-can"></i></a>
-                        </td>
+                        @if (user.Email == "admin@fiscella.com" || user.Email == "advisor@fiscella.com")
+                        {
+                            <td style="text-align: center; vertical-align:middle">
+                            </td>
+                            <td style="text-align: center; vertical-align:middle">
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="text-align: center; vertical-align:middle">
+                                <a asp-action="EditData" asp-controller="Admin" asp-route-UserId="@user.UserId"><i class="fa-solid fa-pen-to-square"></i></a>
+                            </td>
+                            <td style="text-align: center; vertical-align:middle">
+                                <a asp-action="DeleteData" asp-controller="Admin" asp-route-UserId="@user.UserId" style="color: red"><i class="fa-solid fa-trash-can"></i></a>
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>

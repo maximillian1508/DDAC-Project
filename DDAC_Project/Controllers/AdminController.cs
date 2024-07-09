@@ -3,8 +3,14 @@ using DDAC_Project.Data;
 using DDAC_Project.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Encodings.Web;
+using System.Text;
+using DDAC_Project.Areas.Identity.Pages.Account;
 using static DDAC_Project.Controllers.AdvisorController;
 
 namespace DDAC_Project.Controllers
@@ -12,14 +18,23 @@ namespace DDAC_Project.Controllers
     [Authorize(Roles ="Admin")]
     public class AdminController : Controller
     {
-        private readonly DDAC_ProjectContext _context;
-        private readonly UserManager<DDAC_ProjectUser> _userManager;
         private readonly SignInManager<DDAC_ProjectUser> _signInManager;
-        public AdminController(DDAC_ProjectContext context, UserManager<DDAC_ProjectUser> userManager, SignInManager<DDAC_ProjectUser> signInManager)
+        private readonly UserManager<DDAC_ProjectUser> _userManager;
+        private readonly IUserEmailStore<DDAC_ProjectUser> _emailStore;
+        private readonly IUserStore<DDAC_ProjectUser> _userStore;
+        private readonly DDAC_ProjectContext _context;
+
+        public AdminController(
+            UserManager<DDAC_ProjectUser> userManager,
+            IUserStore<DDAC_ProjectUser> userStore,
+            SignInManager<DDAC_ProjectUser> signInManager,
+            DDAC_ProjectContext context
+            )
         {
-            _context = context;
             _userManager = userManager;
+            _userStore = userStore;
             _signInManager = signInManager;
+            _context = context;
         }
 
         public class IndexViewModel
@@ -82,12 +97,15 @@ namespace DDAC_Project.Controllers
         
         public async Task<IActionResult> ManageUser()
         {
+            var user = await _userManager.GetUserAsync(User);
+
             if (!_signInManager.IsSignedIn(User))
             {
                 return Challenge();
             }
 
             List<ManageUserViewModel> userData = await _context.Users
+                .Where(u => u.Id != user.Id)
                 .Select(u => new ManageUserViewModel
                 {
                     UserId = u.Id,
@@ -147,5 +165,27 @@ namespace DDAC_Project.Controllers
 
             return View();
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddAdmin(CreateAdminModel admin)
+        {
+
+            var user = RegisterModel.CreateUser();
+
+            user.FirstName = admin.FirstName;
+            user.LastName = admin.LastName;
+            user.PhoneNumber = admin.PhoneNumber;
+            user.Email = admin.Email;
+            user.EmailConfirmed = true;
+            user.UserType = "Admin";
+
+                await _userStore.SetUserNameAsync(user, admin.Email, CancellationToken.None);
+                 await _userManager.CreateAsync(user, admin.Password);
+            await _userManager.AddToRoleAsync(user, Constants.UserRoles.Admin);
+
+            return RedirectToAction("ManageUser");
+        }
+
     }
 }

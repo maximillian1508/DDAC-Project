@@ -194,7 +194,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private DDAC_ProjectUser CreateUser()
+        public static DDAC_ProjectUser CreateUser()
         {
             try
             {
@@ -208,7 +208,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
             }
         }
 
-        private IUserEmailStore<DDAC_ProjectUser> GetEmailStore()
+        public IUserEmailStore<DDAC_ProjectUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
             {
