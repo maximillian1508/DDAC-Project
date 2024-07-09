@@ -1,0 +1,26 @@
+﻿@model DDAC_Project.Models.Budget
+@using System.Globalization
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title fs-5" id="budgetModalLabel">Monthly Budget Form</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form asp-action="UpdateBudget" asp-controller="Client" method="post">
+                <div class="mb-3">
+                    <label asp-for="Month" class="form-label" style="font-weight: 500">Current Month</label>
+                    <input asp-for="Month" type="text" class="form-control" readonly value="@DateTime.Now.ToString("MMMM")" />
+                    <span asp-validation-for="Month"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Amount" class="form-label" style="font-weight: 500">Budget Amount</label>
+                    <input asp-for="Amount" type="number" class="form-control" placeholder="Enter budget amount">
+                    <span asp-validation-for="Amount"></span>
+                </div>
+                <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Update budget</button>
+            </form>
+        </div>
+    </div>
+</div>

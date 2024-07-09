@@ -1,11 +1,11 @@
 ﻿@using System.Globalization
-@model List<DDAC_Project.Models.Goal>
+@model List<DDAC_Project.Controllers.ClientController.GoalsViewModel>
 @{
     ViewData["Title"] = "Financial Goals";
 }
 
 <div style="display: flex; margin: 1em 0; justify-content: space-between; height:70vh">
-    <div style="width: 60%">
+    <div style="width: 60%; height:65vh">
         <h2 class="mb-4">Your Financial Goals</h2>
         <div style="overflow-y: auto; height:100%; position:relative">
             <table class="table table-hover">
@@ -23,9 +23,8 @@
                     @foreach (var goal in Model)
                     {
                         var culture = new CultureInfo("fr-FR");
-                        var progressPercentage = ((goal.TargetAmount /3) / goal.TargetAmount) * 100;
+                        var progressPercentage = (goal.Progress / goal.TargetAmount) * 100;
                         var formattedPercentage = progressPercentage.ToString("F2", CultureInfo.InvariantCulture);
-                        var targetAmount = goal.TargetAmount.ToString("F2", culture); 
                         <tr>
                             <th style="vertical-align:middle" scope="row">@(Model.IndexOf(goal) + 1)</th>
                             <td style="vertical-align:middle">@goal.Name</td>
@@ -35,7 +34,7 @@
                                     <div class="progress-bar bg-dark" style="width: @formattedPercentage%">
                                     </div>
                                 </div>
-                                RM @((goal.TargetAmount / 3).ToString("F2", culture))
+                                RM @(goal.Progress.ToString("F2", culture))
                             </td>
                             <td style="text-align: center; vertical-align:middle">
                                 <a asp-action="EditGoal" asp-controller="Client" asp-route-GoalId="@goal.GoalId" ><i class="fa-solid fa-pen-to-square"></i></a>

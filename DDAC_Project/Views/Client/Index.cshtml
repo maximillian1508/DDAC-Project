@@ -1,9 +1,113 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model DDAC_Project.Controllers.ClientController.IndexViewModel
+@using System.Globalization
 @{
+    ViewData["Title"] = "Client Dashboard";
 }
 
-<h1>
-    Client Dashboard
-</h1>
+<div class="container row gy-3" style="width: 100%; margin: 0 auto;">
+    <div class="col me-2" style="height: 30vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Transaction</h2>
+        <p style="font-weight: 500; font-size: 2.5rem; padding: 0; margin: 0; line-height: normal">@Model.totalTransaction</p>
+        <p style="font-size: 1rem; color: slategrey; margin-bottom: 0.5rem;bottom: 0; position: absolute; padding-right: 1rem">Your total number of transaction this month.</p>
+    </div>
+    <div class="col me-2" style="height: 30vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Add Transaction</h2>
+
+        <button type="button" data-bs-toggle="modal" data-bs-target="#transactionModal" class="btn btn-light" style="width:100%; border: solid 1px lightgrey; margin: 1em 0">Add</button>
+        <!-- Modal -->
+        <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="transactionModalLabel">Choose Transaction Type</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <a asp-controller="Client" asp-action="AddIncome" class="btn btn-success" style=" width:45%; margin: 1em">Income</a>
+                        <a asp-controller="Client" asp-action="AddExpense" class="btn btn-danger" style=" width:45%; ">Expense</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="font-size: 1rem; color: slategrey; margin-bottom: 0.5rem;bottom: 0; position: absolute; padding-right: 1rem">Add a new transaction here.</p>
+    </div>
+    <div class="col me-2" style="height: 30vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        @if (Model.monthlyBudgetCount == 0)
+        {
+            <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Add Budget</h2>
+
+            <button type="button" data-bs-toggle="modal" data-bs-target="#budgetModal" class="btn btn-light" style="width:100%; border: solid 1px lightgrey; margin: 1em 0">Add</button>
+            <!-- Modal -->
+            <div class="modal fade" id="budgetModal" tabindex="-1" aria-labelledby="budgetModalLabel" aria-hidden="true">
+                @await Html.PartialAsync("_AddBudgetForm", ViewBag.NewBudget as Budget)
+            </div>
+            <p style="font-size: 1rem; color: slategrey; margin-bottom: 0.5rem;bottom: 0; position: absolute; padding-right: 1rem">Add monthly budget here.</p>
+        }
+        else
+        {
+            <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Update Budget</h2>
+
+            <button type="button" data-bs-toggle="modal" data-bs-target="#budgetModal" class="btn btn-light" style="width:100%; border: solid 1px lightgrey; margin: 1em 0">Update</button>
+            <!-- Modal -->
+            <div class="modal fade" id="budgetModal" tabindex="-1" aria-labelledby="budgetModalLabel" aria-hidden="true">
+                @await Html.PartialAsync("_UpdateBudgetForm", ViewBag.NewBudget as Budget)
+            </div>
+            <p style="font-size: 1rem; color: slategrey; margin-bottom: 0.5rem;bottom: 0; position: absolute; padding-right: 1rem">Update monthly budget here.</p>
+        }
+    </div>
+
+    <div class="col me-2" style="height: 30vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Budget</h2>
+
+        <div class="progress" role="progressbar" style="margin-top: 1em">
+            @if (Model.totalMonthlyExpense > 0 && Model.monthlyBudget == 0)
+            {
+                <div class="progress-bar bg-dark" style="width: 100%"></div>
+            }
+            else if (Model.totalMonthlyExpense == 0 && Model.monthlyBudget == 0)
+            {
+                <div class="progress-bar bg-dark" style="width: 0%"></div>
+            }
+            else
+            {
+                <div class="progress-bar bg-dark"
+                     style="width: @((Model.totalMonthlyExpense/Model.monthlyBudget*100).ToString("F2", CultureInfo.InvariantCulture))%">
+                </div>
+            }
+
+        </div>
+        <p style="font-weight: 500; font-size: 1.5rem; padding: 0; margin: 0; line-height: normal">@Model.totalMonthlyExpense/@Model.monthlyBudget</p>
+        <p style="font-size: 1rem; color: slategrey; margin-bottom: 0.5rem;bottom: 0; position: absolute; padding-right: 1rem">Your budgeting this month.</p>
+    </div>
+
+    <div class="col-12" style="height:47.5vh; padding: 0">
+        <h2 style="font-size: 1.5rem">Recent Transactions</h2>
+        <div style="height: 90%; border: solid 1px lightgrey; border-radius: 15px; padding: 0.75em 1.25em">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col" style="font-weight:400; color: slategrey">Date</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Description</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Amount</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Type</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Category</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Goal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var transaction in Model.RecentTransactions)
+                    {
+                        <tr>
+                            <td>@transaction.Date</td>
+                            <td>@(String.IsNullOrEmpty(transaction.Description) ? "-" : transaction.Description)</td>
+                            <td>RM @transaction.Amount</td>
+                            <td>@transaction.Type</td>
+                            <td>@transaction.CategoryName</td>
+                            <td>@(String.IsNullOrEmpty(transaction.GoalName) ? "-" : transaction.GoalName)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
