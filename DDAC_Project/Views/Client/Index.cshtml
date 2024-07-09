@@ -81,7 +81,10 @@
     </div>
 
     <div class="col-12" style="height:47.5vh; padding: 0">
-        <h2 style="font-size: 1.5rem">Recent Transactions</h2>
+        <div style="display: flex; justify-content: space-between; flex-direction: row; margin-bottom: 0.5rem">
+            <h2 style="font-size: 1.5rem; width:fit-content; margin: 0; line-height:normal">Recent Transactions</h2>
+            <a asp-controller="Client" asp-action="ManageCategory" class="btn btn-dark" style=" width:fit-content; ">Manage Category</a>
+        </div>
         <div style="height: 90%; border: solid 1px lightgrey; border-radius: 15px; padding: 0.75em 1.25em">
             <table class="table table-hover">
                 <thead>

@@ -1,0 +1,56 @@
+﻿@model List<DDAC_Project.Controllers.ClientController.CategoriesViewModel>
+@{
+    ViewData["Title"] = "Financial Goals";
+}
+
+<div style="display: flex; margin: 1em 0; justify-content: space-between; height:70vh">
+    <div style="width: 60%; height:65vh">
+        <h2 class="mb-4">Your Transaction Categories</h2>
+        <div style="overflow-y: auto; height:100%; position:relative">
+            <table class="table table-hover">
+                <thead style="position: sticky; top:0">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Default</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in Model)
+                    {
+                        <tr>
+                            <th style="vertical-align:middle" scope="row">@(Model.IndexOf(category) + 1)</th>
+                            <td style="vertical-align:middle">@category.Name</td>
+                            <td style="vertical-align:middle"> @category.Type</td>
+                            <td style="vertical-align:middle; text-align:center">@(category.isDefault == true ? "Yes" : "No")</td>
+                            @if (category.isDefault == true)
+                            {
+                                <td style="text-align: center; vertical-align:middle">
+                                </td>
+                                <td style="text-align: center; vertical-align:middle">
+                                </td>
+                                
+                            } else
+                            {
+                                <td style="text-align: center; vertical-align:middle">
+                                    <a asp-action="EditCategory" asp-controller="Client" asp-route-CategoryId="@category.CategoryId"><i class="fa-solid fa-pen-to-square"></i></a>
+                                </td>
+                                <td style="text-align: center; vertical-align:middle">
+                                    <a asp-action="DeleteCategory" asp-controller="Client" asp-route-CategoryId="@category.CategoryId" style="color: red"><i class="fa-solid fa-trash-can"></i></a>
+                                </td>
+                            }
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="width: 35%">
+        @await Html.PartialAsync("_AddCategoryForm", ViewBag.NewCategory as Category)
+    </div>
+
+</div>

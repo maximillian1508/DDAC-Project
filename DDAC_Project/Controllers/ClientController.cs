@@ -12,6 +12,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DDAC_Project.Controllers
 {
+    [Authorize(Roles ="Client")]
     public class ClientController : Controller
     {
         private readonly DDAC_ProjectContext _context;
@@ -55,6 +56,18 @@ namespace DDAC_Project.Controllers
             public decimal Progress { get; set; }
         }
 
+        public class CategoriesViewModel
+        {
+            public int? CategoryId { get; set; }
+
+            public string? Name { get; set; }
+
+            public string? Type { get; set; }
+
+            public bool? isDefault { get; set; }
+        }
+
+        [Route("/client-dashboard")]
         public async Task<IActionResult> Index()
         {
             var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
@@ -109,12 +122,9 @@ namespace DDAC_Project.Controllers
             return View(viewModel);
         }
 
-        public IActionResult Analysis()
-        {
-            return View();
-        }
 
         [HttpGet]
+        [Route("/add-income")]
         public async Task<IActionResult> AddIncome()
         {
             var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
@@ -151,8 +161,8 @@ namespace DDAC_Project.Controllers
         }
 
         [HttpPost]
+        [Route("/add-income")]
         [ValidateAntiForgeryToken]
-
         public async Task<IActionResult> AddIncome(Transaction transaction)
         {
 
@@ -171,6 +181,7 @@ namespace DDAC_Project.Controllers
         }
 
         [HttpGet]
+        [Route("/add-expense")]
         public async Task<IActionResult> AddExpense()
         {
             var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
@@ -193,8 +204,8 @@ namespace DDAC_Project.Controllers
         }
 
         [HttpPost]
+        [Route("/add-expense")]
         [ValidateAntiForgeryToken]
-
         public async Task<IActionResult> AddExpense(Transaction transaction)
         {
 
@@ -207,6 +218,7 @@ namespace DDAC_Project.Controllers
             return RedirectToAction("Index");
         }
 
+        [Route("/goals")]
         public async Task<IActionResult> Goals()
         {
             var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
@@ -251,6 +263,7 @@ namespace DDAC_Project.Controllers
             return RedirectToAction("Goals");
         }
 
+        [Route("/edit-goal")]
         public async Task<IActionResult> EditGoal(int? GoalId)
         {
             if (GoalId == null)
@@ -329,6 +342,105 @@ namespace DDAC_Project.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
+        }
+
+        [Route("manage-category")]
+        public async Task<IActionResult> ManageCategory()
+        {
+            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+
+            if (clientId == 0)
+            {
+                await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
+                return Challenge();
+            }
+
+            List<CategoriesViewModel> categories = await _context.Categories
+                .Where(c => c.ClientId == clientId || c.IsDefault == true)
+                .Select(c => new CategoriesViewModel
+                {
+                    CategoryId = c.CategoryId,
+                    Name = c.Name,
+                    Type = c.Type,
+                    isDefault = c.IsDefault
+                })
+                .OrderByDescending(c => c.CategoryId)
+                .ToListAsync();
+
+            ViewBag.NewCategory = new Category
+            {
+                Name = "",
+                Type = "Income",
+                IsDefault = false,
+                ClientId = clientId,
+                Client = await _context.Clients.FindAsync(clientId)
+            };
+
+            return View(categories);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddCategory(Category newCategory)
+        {
+            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+            newCategory.ClientId = clientId;
+            Console.WriteLine(clientId);
+            _context.Categories.Add(newCategory);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("ManageCategory");
+        }
+
+        [Route("/edit-category")]
+        public async Task<IActionResult> EditCategory(int? CategoryId)
+        {
+            if (CategoryId == null)
+            {
+                return NotFound();
+            }
+            var category = await _context.Categories.FindAsync(CategoryId);
+
+            if (category == null)
+            {
+                return BadRequest(CategoryId + " is not found in the table!");
+            }
+            return View(category);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateCategory(Category category)
+        {
+            try
+            {
+                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                category.ClientId = clientId;
+                _context.Categories.Update(category);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("ManageCategory", "Client");
+                //return View("EditCategory", category);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error: " + ex.Message);
+            }
+        }
+
+        public async Task<IActionResult> DeleteCategory(int? CategoryId)
+        {
+            if (CategoryId == null)
+            {
+                return NotFound();
+            }
+            var category = await _context.Categories.FindAsync(CategoryId);
+            if (category == null)
+            {
+                return BadRequest(CategoryId + " is not found in the list!");
+            }
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ManageCategory", "Client");
         }
     }
 }
