@@ -1,9 +1,30 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model DDAC_Project.Controllers.AdminController.IndexViewModel
 @{
 }
 
-<h1>
-    Admin Dashboard
-</h1>
+<div style="display: flex; flex-direction: row; margin: 40px; justify-content: center">
+    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 170px">
+        <div>
+            <h5 style="padding: 10px 0px 0px 10px; font-size: 24px">Total Assigned Clients</h5>
+            <p style="padding-left: 10px; display: flex; font-size: 14px">The total number of clients you have.</p>
+        </div>
+        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">@Model.ClientCount</p>
+    </div>
+    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 170px; margin-left: 80px; margin-right: 80px">
+        <div>
+            <h5 style="padding: 10px 0px 0px 10px; font-size: 24px">Total Managed Assets</h5>
+            <p style="padding-left: 10px; display: flex; font-size: 14px">The total assets managed for all clients.</p>
+        </div>
+        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Model.ManagedAssets.ToString("N2")</p>
+    </div>
+    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 170px">
+        <div>
+            <h5 style="padding: 10px 0px 0px 10px; font-size: 24px">Total Transactions</h5>
+            <p style="padding-left: 10px; display: flex; font-size: 14px">The total transactions this month.</p>
+        </div>
+        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">@Model.TransactionCount</p>
+    </div>
+</div>
+<div style="display: flex; border: groove; flex-direction: row; width:75%; margin: 0 auto 40px auto">
+    <p>Total Client Assets</p>
+</div>
