@@ -7,21 +7,23 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace DDAC_Project.Controllers
 {
-    [Authorize(Roles = "Advisor")]
     public class AdvisorController : Controller
     {
         private readonly DDAC_ProjectContext _context;
         private readonly UserManager<DDAC_ProjectUser> _userManager;
-        public AdvisorController(DDAC_ProjectContext context, UserManager<DDAC_ProjectUser> userManager)
+        private readonly SignInManager<DDAC_ProjectUser> _signInManager;
+        public AdvisorController(DDAC_ProjectContext context, UserManager<DDAC_ProjectUser> userManager, SignInManager<DDAC_ProjectUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public class IndexViewModel
@@ -102,6 +104,7 @@ namespace DDAC_Project.Controllers
             public DateTime Date { get; set; }
         }
 
+        [Authorize(Roles = "Advisor")]
         public async Task<IActionResult> Index()
         {
             //var user = await _userManager.GetUserAsync(User);
@@ -135,7 +138,7 @@ namespace DDAC_Project.Controllers
                     },
                     TotalAssets = _context.Transactions
                         .Where(t => t.ClientId == c.ClientId)
-                        .Sum(t => t.Amount)
+                        .Sum(t => t.Amount) 
                 })
                 .ToListAsync();
 
@@ -155,15 +158,16 @@ namespace DDAC_Project.Controllers
             return View("Index", viewModel);
         }
 
+        [Authorize(Roles="Advisor")]
         public async Task<IActionResult> FinancialAnalysis(int clientId)
         {
-            //var user = await _userManager.GetUserAsync(User);
             var advisorId = Convert.ToInt32(HttpContext.Session.GetInt32("AdvisorId"));
+            var user = await _userManager.GetUserAsync(User);
 
-            if (advisorId == 0)
+            if (advisorId == 0 && user.UserType == "Advisor")
             {
                 return Challenge();
-            }
+            } 
 
             var client = await _context.Clients.Include(c => c.User).FirstOrDefaultAsync(c => c.ClientId == clientId);
             if (client == null)
@@ -241,6 +245,27 @@ namespace DDAC_Project.Controllers
         }
 
 
+        [Authorize(Roles = "Client")]
+        [Route("/financial-analysis")]
+        public async Task<IActionResult> ClientFinancialAnalysis()
+        {
+            var client = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+
+            if (client == 0)
+            {
+                return Challenge();
+            }
+
+
+            var result = await FinancialAnalysis(client) as ViewResult;
+            if (result != null)
+            {
+                return View("FinancialAnalysis", result.Model);
+            }
+            return NotFound();
+        }
+
+        [Authorize(Roles = "Advisor")]
         public async Task<IActionResult> SelectUser()
         {
             var advisorId = Convert.ToInt32(HttpContext.Session.GetInt32("AdvisorId"));
@@ -265,6 +290,7 @@ namespace DDAC_Project.Controllers
             return View(assignedClients);
         }
 
+        [Authorize(Roles = "Advisor")]
         [HttpPost]
         public async Task<IActionResult> AddComment(int clientId, string commentText)
         {

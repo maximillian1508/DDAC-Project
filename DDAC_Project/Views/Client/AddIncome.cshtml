@@ -1,0 +1,43 @@
+﻿@model DDAC_Project.Models.Transaction
+
+@{
+    ViewData["Title"] = "Add Income";
+}
+
+<form asp-action="AddIncome" class="row" method="post" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 70%; padding: 25px 20px; margin: 2em auto">
+    <div style="display: flex;">
+        <h1 style="margin: 0; font-size: 1.75rem; width: fit-content">Add a New Income</h1>
+        <a asp-action="Index" asp-controller="Client" style="margin-left: auto; color: black; font-size: 1.75rem; line-height:normal"><i class="fa-solid fa-xmark"></i></a>
+    </div>
+    <p style="font-size: 1.25rem; color: slategrey; margin-bottom: 1rem; padding-right: 1rem">Fill out the form to add a new income</p>
+    <div class="col-md-6">
+        <label asp-for="Amount" class="form-label" style="font-weight: 500">Amount</label>
+        <input asp-for="Amount" class="form-control" type="number" placeholder="Enter income amount">
+        <span asp-validation-for="Amount"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Date" class="form-label" style="font-weight: 500">Date</label>
+        <input asp-for="Date" class="form-control" type="text" value="@DateTime.Now.ToLongDateString()">
+        <span asp-validation-for="Date"></span>
+    </div>
+    <div class="my-3 col-12">
+        <label asp-for="Description" class="form-label" style="font-weight: 500">Description</label>
+        <input asp-for="Description" type="text" class="form-control" placeholder="Enter income description" value="">
+        <span asp-validation-for="Description"></span>
+    </div>
+    <div class="col-12 mb-3">
+        <label asp-for="CategoryId" class="form-label" style="font-weight: 500">Category</label>
+        <select asp-for="CategoryId" asp-items="@ViewBag.Categories" class="form-select">
+
+        </select>
+        <span asp-validation-for="CategoryId"></span>
+    </div>
+
+    <div class="col-12 mb-3">
+        <label asp-for="GoalId" class="form-label" style="font-weight: 500">Goal</label>
+        <select asp-for="GoalId" asp-items="@ViewBag.Goals" class="form-select">
+        </select>
+        <span asp-validation-for="GoalId"></span>
+    </div>
+    <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Add a new income</button>
+</form>
