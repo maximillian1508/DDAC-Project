@@ -30,6 +30,26 @@ namespace DDAC_Project.Controllers
 
         }
 
+        public class ManageUserViewModel
+        {
+            public string UserId { get; set; }
+            public string Email { get; set; }
+            public string PhoneNumber { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string UserType { get; set; }
+        }
+
+        public class CreateAdminModel
+        {
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string PhoneNumber { get; set; }
+            public string Email { get; set; }
+            public string Password { get; set; }
+            public string ConfirmPassword { get; set; }
+        }
+
         public async Task<IActionResult> Index()
         {
             if (!_signInManager.IsSignedIn(User)) 
@@ -60,8 +80,71 @@ namespace DDAC_Project.Controllers
             return View("Index", viewModel);
         }    
         
-        public IActionResult ManageUser()
+        public async Task<IActionResult> ManageUser()
         {
+            if (!_signInManager.IsSignedIn(User))
+            {
+                return Challenge();
+            }
+
+            List<ManageUserViewModel> userData = await _context.Users
+                .Select(u => new ManageUserViewModel
+                {
+                    UserId = u.Id,
+                    Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    UserType = u.UserType
+
+                })
+                .ToListAsync();
+            
+
+
+            return View(userData);
+        }
+
+        public async Task<IActionResult> DeleteData(string UserId)
+        {
+            if (UserId == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users.FindAsync(UserId);
+            if (user == null)
+            {
+                return BadRequest(UserId + " is not found in the list!");
+            }
+            if (user.UserType == "Client")
+            {
+                var Client = await _context.Clients.Where(c => c.UserId == UserId).FirstOrDefaultAsync();
+
+                if (Client != null)
+                {
+                    // Delete related transactions
+                    var transactions = await _context.Transactions.Where(t => t.ClientId == Client.ClientId).ToListAsync();
+                    _context.Transactions.RemoveRange(transactions);
+
+                    // Delete related goals
+                    var goals = await _context.Goals.Where(g => g.ClientId == Client.ClientId).ToListAsync();
+                    _context.Goals.RemoveRange(goals);
+
+                    // Delete related categories
+                    var categories = await _context.Categories.Where(c => c.ClientId == Client.ClientId).ToListAsync();
+                    _context.Categories.RemoveRange(categories);
+                    _context.Clients.Remove(Client);
+                }
+            }
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ManageUser", "Admin");
+        }
+
+        public IActionResult AddAdmin()
+        {
+
             return View();
         }
     }

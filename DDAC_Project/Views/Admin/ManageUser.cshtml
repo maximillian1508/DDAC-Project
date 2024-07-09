@@ -1,9 +1,60 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model List<DDAC_Project.Controllers.AdminController.ManageUserViewModel>
 @{
 }
 
-<h1>
-    Manage User
-</h1>
+<div style="display: flex; justify-content: space-between">
+    <h2 style="padding-top: 10px; color: dimgray; width: fit-content">User Data</h2>
+    <button type="button" data-bs-toggle="modal" data-bs-target="#userModal" class="btn btn-dark" style="width:fit-content; border: solid 1px lightgrey; margin: 1em 0">Add New User</button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="userModalLabel">Choose User Type</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="display:flex; gap: 1em;">
+                <a asp-controller="Admin" asp-action="AddAdmin" class="btn btn-info" style=" width:45%; padding: 5px 0">Admin</a>
+                <a asp-controller="Admin" asp-action="AddAdvisor" class="btn btn-warning" style=" width:45%; padding: 5px 0 ">Advisor</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" style="width: 100%; height: 70vh; border: groove; margin: 2em auto; text-align: center">
+    <div style="overflow-y: auto; height: 100%; position:relative">
+        <table class="table table-striped">
+            <thead style="position: sticky; top:0">
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>User Type</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>@user.FirstName</td>
+                        <td>@user.LastName</td>
+                        <td>@user.Email</td>
+                        <td>@user.PhoneNumber</td>
+                        <td>@user.UserType</td>
+                        <td style="text-align: center; vertical-align:middle">
+                            <a asp-action="EditData" asp-controller="Admin" asp-route-UserId="@user.UserId"><i class="fa-solid fa-pen-to-square"></i></a>
+                        </td>
+                        <td style="text-align: center; vertical-align:middle">
+                            <a asp-action="DeleteData" asp-controller="Admin" asp-route-UserId="@user.UserId" style="color: red"><i class="fa-solid fa-trash-can"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </<div>
+</div>
+
