@@ -91,6 +91,36 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(advisorUser, UserRoles.Advisor);
         }
     }
+    // Seed default categories
+        var defaultCategories = new List<Category>
+    {
+        // Income categories
+        new Category { Name = "Salary", Type = "Income", IsDefault = true },
+        new Category { Name = "Grants", Type = "Income", IsDefault = true },
+        new Category { Name = "Refunds", Type = "Income", IsDefault = true },
+        new Category { Name = "Awards", Type = "Income", IsDefault = true },
+        new Category { Name = "Sale", Type = "Income", IsDefault = true },
+
+        // Expense categories
+        new Category { Name = "Education", Type = "Expense", IsDefault = true },
+        new Category { Name = "Entertainment", Type = "Expense", IsDefault = true },
+        new Category { Name = "Food", Type = "Expense", IsDefault = true },
+        new Category { Name = "Transportation", Type = "Expense", IsDefault = true },
+        new Category { Name = "Shopping", Type = "Expense", IsDefault = true },
+        new Category { Name = "Health", Type = "Expense", IsDefault = true },
+        new Category { Name = "Home", Type = "Expense", IsDefault = true },
+        new Category { Name = "Utilities", Type = "Expense", IsDefault = true }
+    };
+
+    foreach (var category in defaultCategories)
+    {
+        if (!await dbContext.Categories.AnyAsync(c => c.Name == category.Name && c.Type == category.Type && c.IsDefault))
+        {
+            dbContext.Categories.Add(category);
+        }
+    }
+
+    await dbContext.SaveChangesAsync();
 }
 
 // Configure the HTTP request pipeline.
