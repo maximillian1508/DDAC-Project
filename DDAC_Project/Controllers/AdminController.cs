@@ -65,6 +65,18 @@ namespace DDAC_Project.Controllers
             public string ConfirmPassword { get; set; }
         }
 
+        public class CreateAdvisorModel
+        {
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string PhoneNumber { get; set; }
+            public string Email { get; set; }
+            public string Password { get; set; }
+            public string ConfirmPassword { get; set; }
+            public string Specialization { get; set; }
+            public string YearOfExperience { get; set; }
+        }
+
         public async Task<IActionResult> Index()
         {
             if (!_signInManager.IsSignedIn(User)) 
@@ -184,6 +196,49 @@ namespace DDAC_Project.Controllers
                  await _userManager.CreateAsync(user, admin.Password);
             await _userManager.AddToRoleAsync(user, Constants.UserRoles.Admin);
 
+            return RedirectToAction("ManageUser");
+        }
+
+        public IActionResult AddAdvisor()
+        {
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddAdvisor(CreateAdvisorModel advisor)
+        {
+
+            var user = RegisterModel.CreateUser();
+
+            user.FirstName = advisor.FirstName;
+            user.LastName = advisor.LastName;
+            user.PhoneNumber = advisor.PhoneNumber;
+            user.Email = advisor.Email;
+            user.EmailConfirmed = true;
+            user.UserType = "Advisor";
+
+            await _userStore.SetUserNameAsync(user, advisor.Email, CancellationToken.None);
+            var result = await _userManager.CreateAsync(user, advisor.Password);
+            await _userManager.AddToRoleAsync(user, Constants.UserRoles.Advisor);
+
+            if (result.Succeeded)
+            {
+                var userId = await _userManager.GetUserIdAsync(user);
+
+                var newAdvisor = new Advisor
+                {
+                    User = user,
+                    UserId = userId,
+                    Specialization = advisor.Specialization,
+                    YearsOfExperience = advisor.YearOfExperience
+                    //add specialization, year of experience
+                };
+
+                await _context.AddAsync(newAdvisor);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction("ManageUser");
         }
 
