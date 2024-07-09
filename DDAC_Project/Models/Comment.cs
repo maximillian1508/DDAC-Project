@@ -12,8 +12,7 @@ namespace DDAC_Project.Models
         [Required]
         public required int ClientId { get; set; }      
         
-        [Required]
-        public required int AdvisorId { get; set; }  
+        public int ? AdvisorId { get; set; }  
         
 
         [Required]
@@ -27,6 +26,6 @@ namespace DDAC_Project.Models
         public virtual required Client Client { get; set; } 
         
         [ForeignKey("AdvisorId")]
-        public virtual required Advisor Advisor { get; set; }
+        public virtual Advisor ? Advisor { get; set; }
     }
 }

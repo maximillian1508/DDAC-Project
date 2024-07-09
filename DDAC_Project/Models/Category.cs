@@ -9,7 +9,7 @@ namespace DDAC_Project.Models
         [Key]
         public int CategoryId { get; set; }
 
-        public int ClientId { get; set; }
+        public int ? ClientId { get; set; }
 
         [Required]
         public required string Name { get; set; }

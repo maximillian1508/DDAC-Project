@@ -12,8 +12,7 @@ namespace DDAC_Project.Models
         [Required]
         public required int ClientId { get; set; }
         
-        [Required]
-        public required int CategoryId { get; set; }
+        public int ? CategoryId { get; set; }
         
         public int ? GoalId { get; set; }
 
@@ -30,10 +29,10 @@ namespace DDAC_Project.Models
         [ForeignKey("ClientId")]
         public virtual required Client Client { get; set; }
         
-        [ForeignKey("ClientId")]
-        public virtual required Category Category { get; set; } 
+        [ForeignKey("CategoryId")]
+        public virtual Category ? Category { get; set; } 
         
-        [ForeignKey("ClientId")]
+        [ForeignKey("GoalId")]
         public virtual Goal ? Goal { get; set; }
     }
 }
