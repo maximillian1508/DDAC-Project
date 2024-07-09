@@ -4,7 +4,7 @@
     ViewData["Title"] = "Add Expense";
 }
 
-<form asp-action="AddExpense" class="row" method="post" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 70%; padding: 25px 20px; margin: 2em auto">
+<form asp-action="AddExpense" method="post" class="row" method="post" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 70%; padding: 25px 20px; margin: 2em auto">
     <div style="display: flex;">
         <h1 style="margin: 0; font-size: 1.75rem; width: fit-content">Add a New Expense</h1>
         <a asp-action="Index" asp-controller="Client" style="margin-left: auto; color: black; font-size: 1.75rem; line-height:normal"><i class="fa-solid fa-xmark"></i></a>
@@ -17,7 +17,7 @@
     </div>
     <div class="col-md-6">
         <label asp-for="Date" class="form-label" style="font-weight: 500">Date</label>
-        <input asp-for="Date" class="form-control" type="text" value="@DateTime.Now.ToLongDateString()">
+        <input asp-for="Date" class="form-control" type="text" readonly value="@DateTime.Now.ToLongDateString()">
         <span asp-validation-for="Date"></span>
     </div>
     <div class="my-3 col-12">
