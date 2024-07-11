@@ -14,15 +14,16 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using ASPNETCoreIdentityDemo.Models;
 
 namespace DDAC_Project.Areas.Identity.Pages.Account
 {
     public class ForgotPasswordModel : PageModel
     {
         private readonly UserManager<DDAC_ProjectUser> _userManager;
-        private readonly IEmailSender _emailSender;
+        private readonly ISenderEmail _emailSender;
 
-        public ForgotPasswordModel(UserManager<DDAC_ProjectUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(UserManager<DDAC_ProjectUser> userManager, ISenderEmail emailSender)
         {
             _userManager = userManager;
             _emailSender = emailSender;
@@ -74,7 +75,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
                 await _emailSender.SendEmailAsync(
                     Input.Email,
                     "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.", true);
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

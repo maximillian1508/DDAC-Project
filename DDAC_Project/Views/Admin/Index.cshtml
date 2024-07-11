@@ -1,30 +1,54 @@
 ﻿@model DDAC_Project.Controllers.AdminController.IndexViewModel
 @{
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<div style="display: flex; flex-direction: row; margin: 40px; justify-content: center">
-    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 170px">
-        <div>
-            <h5 style="padding: 10px 0px 0px 10px; font-size: 24px">Total Assigned Clients</h5>
-            <p style="padding-left: 10px; display: flex; font-size: 14px">The total number of clients you have.</p>
-        </div>
-        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">@Model.ClientCount</p>
+<div class="container row gy-3" style="width: 100%; margin: 0 auto;">
+    <div class="col me-2" style="height: 30vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Clients</h2>
+        <p style="font-weight: 500; font-size: 2.5rem; padding: 0; margin: 0; line-height: normal">@Model.ClientCount</p>
+        <p style="font-size: 1rem; color: slategrey; margin-bottom: 0.5rem;bottom: 0; position: absolute; padding-right: 1rem">The total number of clients you have.</p>
     </div>
-    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 170px; margin-left: 80px; margin-right: 80px">
-        <div>
-            <h5 style="padding: 10px 0px 0px 10px; font-size: 24px">Total Managed Assets</h5>
-            <p style="padding-left: 10px; display: flex; font-size: 14px">The total assets managed for all clients.</p>
-        </div>
-        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Model.ManagedAssets.ToString("N2")</p>
+    <div class="col me-2" style="height: 30vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Managed Assets</h2>
+        <p style="font-weight: 500; font-size: 2.5rem; padding: 0; margin: 0; line-height: normal">RM @Model.ManagedAssets.ToString("N2")</p>
+        <p style="font-size: 1rem; color: slategrey; margin-bottom: 0.5rem;bottom: 0; position: absolute; padding-right: 1rem">The total assets managed for all clients.</p>
     </div>
-    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 170px">
-        <div>
-            <h5 style="padding: 10px 0px 0px 10px; font-size: 24px">Total Transactions</h5>
-            <p style="padding-left: 10px; display: flex; font-size: 14px">The total transactions this month.</p>
-        </div>
-        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">@Model.TransactionCount</p>
+    <div class="col me-2" style="height: 30vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Transactions</h2>
+        <p style="font-weight: 500; font-size: 2.5rem; padding: 0; margin: 0; line-height: normal">@Model.TransactionCount</p>
+        <p style="font-size: 1rem; color: slategrey; margin-bottom: 0.5rem;bottom: 0; position: absolute; padding-right: 1rem">The total transactions this month.</p>
     </div>
-</div>
-<div style="display: flex; border: groove; flex-direction: row; width:75%; margin: 0 auto 40px auto">
-    <p>Total Client Assets</p>
+    <div class="col-12" style="height:47.5vh; padding: 0">
+        <h2 class="mb-1" style="font-size: 1.5rem; width:fit-content; margin: 0; line-height:normal">Top Client Assets</h2>
+        <div style="height: 90%; border: solid 1px lightgrey; border-radius: 15px; padding: 0.75em 1.25em">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col" style="font-weight:400; color: slategrey">#</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Client Name</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Client Email</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Advisor Email</th>
+                        <th scope="col" style="font-weight:400; color: slategrey">Total Assets</th>
+                        <th scope="col" style="font-weight:400; color: slategrey"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.TotalAssetsPerUser)
+                    {
+                        <tr>
+                            <th scope="row">@(Model.TotalAssetsPerUser.IndexOf(row) + 1)</th>
+                            <td>@row.ClientName</td>
+                            <td>@row.ClientEmail</td>
+                            <td>@row.AdvisorEmail</td>
+                            <td>RM @row.TotalAsset</td>
+                            <td style="text-align: center; vertical-align:middle">
+                                <a asp-action="EditUser" asp-controller="Admin" asp-route-UserId="@row.ClientUserId"><i class="fa-solid fa-eye"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

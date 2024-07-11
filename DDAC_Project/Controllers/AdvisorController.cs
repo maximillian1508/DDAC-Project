@@ -47,6 +47,8 @@ namespace DDAC_Project.Controllers
             public List<TransactionHistoryItem> TransactionHistory { get; set; }
             public List<CommentModel> CommentHistory { get; set; }
             public int ClientId { get; set; }
+            public DateTime CurrentDate { get; set; }
+            public List<DateTime> AvailableMonths { get; set; }
         }
 
         public class UserModel
@@ -91,19 +93,25 @@ namespace DDAC_Project.Controllers
 
         public class TransactionHistoryItem
         {
+            public int TransactionId { get; set; }
             public string GoalName { get; set; }
             public string CategoryName { get; set; }
             public decimal Amount { get; set; }
             public DateTime Date { get; set; }
             public string Description { get; set; }
+
+            public string Type { get; set; }
         }
 
         public class CommentModel
         {
             public string CommentText { get; set; }
             public DateTime Date { get; set; }
+
+            public string AdvisorName { get; set; }
         }
 
+        [Route("/advisor-dashboard")]
         [Authorize(Roles = "Advisor")]
         public async Task<IActionResult> Index()
         {
@@ -159,8 +167,11 @@ namespace DDAC_Project.Controllers
         }
 
         [Authorize(Roles="Advisor")]
-        public async Task<IActionResult> FinancialAnalysis(int clientId)
+        [Route("/financial-analysis")]
+        public async Task<IActionResult> FinancialAnalysis(int clientId,  DateTime? date = null)
         {
+            var currentDate = date ?? DateTime.Now;
+
             var advisorId = Convert.ToInt32(HttpContext.Session.GetInt32("AdvisorId"));
             var user = await _userManager.GetUserAsync(User);
 
@@ -177,25 +188,25 @@ namespace DDAC_Project.Controllers
 
             var fullName = $"{client.User.FirstName} {client.User.LastName}";
 
-            var transactions = await _context.Transactions.Where(t => t.ClientId == clientId).ToListAsync();
-            var totalIncome = transactions.Where(t => t.Amount > 0).Sum(t => t.Amount);
-            var totalExpense = transactions.Where(t => t.Amount < 0).Sum(t => t.Amount);
-            var netBalance = totalIncome + totalExpense;
+            var transactions = await _context.Transactions.Where(t => t.ClientId == clientId && t.Date.Month == currentDate.Month && t.Date.Year == currentDate.Year).ToListAsync();
+            var totalIncome = await _context.Transactions.Where(t => t.ClientId == clientId && t.Category.Type == "Income" && t.Date.Month == currentDate.Month && t.Date.Year == currentDate.Year).SumAsync(t => t.Amount);
+            var totalExpense = await _context.Transactions.Where(t => t.ClientId == clientId && t.Category.Type == "Expense" && t.Date.Month == currentDate.Month && t.Date.Year == currentDate.Year).SumAsync(t => t.Amount);
+            var netBalance = totalIncome - totalExpense;
             var categoryIncomeData = await _context.Categories
                 .GroupJoin(
-                    _context.Transactions.Where(t => t.ClientId == clientId && t.Amount > 0),
+                    _context.Transactions.Where(t => t.ClientId == clientId && t.Category.Type == "Income" && t.Date.Month == currentDate.Month && t.Date.Year == currentDate.Year),
                     c => c.CategoryId,
                     t => t.CategoryId,
                     (c, ts) => new IncomeCategoryData
                     {
                         CategoryName = c.Name,
-                        TotalIncome = ts.Sum(t => t.Amount)
+                        TotalIncome = ts.Sum(t => t.Amount),
                     })
-                .Where(c => c.TotalIncome > 0)
+                .Where(ic => ic.TotalIncome > 0)
                 .ToListAsync();
             var categoryExpenseData = await _context.Categories
                 .GroupJoin(
-                    _context.Transactions.Where(t => t.ClientId == clientId && t.Amount < 0),
+                    _context.Transactions.Where(t => t.ClientId == clientId && t.Category.Type == "Expense" && t.Date.Month == currentDate.Month && t.Date.Year == currentDate.Year),
                     c => c.CategoryId,
                     t => t.CategoryId,
                     (c, ts) => new ExpenseCategoryData
@@ -203,28 +214,30 @@ namespace DDAC_Project.Controllers
                         CategoryName = c.Name,
                         TotalExpense = ts.Sum(t => t.Amount)
                     })
-                .Where(c => c.TotalExpense < 0)
+                .Where(ic => ic.TotalExpense > 0)
                 .ToListAsync();
             var transactionHistory = await _context.Transactions
-                .Where(t => t.ClientId == clientId)
-                .OrderByDescending(t => t.Date)
-                .Take(10) // Limit to the last 10 transactions
+                .Where(t => t.ClientId == clientId && t.Date.Month == currentDate.Month && t.Date.Year == currentDate.Year)
+                .OrderByDescending(t => t.TransactionId)
                 .Select(t => new TransactionHistoryItem
                 {
+                    TransactionId = t.TransactionId,
                     GoalName = t.Goal.Name,
                     CategoryName = t.Category.Name,
                     Amount = t.Amount,
                     Date = t.Date,
-                    Description = t.Description
+                    Description = t.Description,
+                    Type = t.Category.Type,
                 })
                 .ToListAsync();
             var commentHistory = await _context.Comments
-                .Where(c => c.ClientId == clientId)
+                .Where(c => c.ClientId == clientId && c.Date.Month == currentDate.Month && c.Date.Year == currentDate.Year)
                 .OrderByDescending(c => c.Date)
                 .Select(c => new CommentModel
                 {
                     CommentText = c.CommentText,
-                    Date = c.Date
+                    Date = c.Date,
+                    AdvisorName = c.Advisor.User.FirstName + c.Advisor.User.LastName
                 })
                 .ToListAsync();
 
@@ -238,16 +251,27 @@ namespace DDAC_Project.Controllers
                 CategoryExpenseData = categoryExpenseData,
                 TransactionHistory = transactionHistory,
                 CommentHistory = commentHistory,
-                ClientId = clientId
-        };
+                ClientId = clientId,
+                CurrentDate = currentDate,
+                AvailableMonths = GetAvailableMonths(currentDate)
+            };
 
             return View(model);
         }
 
+        private List<DateTime> GetAvailableMonths(DateTime currentDate)
+        {
+            var months = new List<DateTime>();
+            for (int i = 0; i < 6; i++)
+            {
+                months.Add(currentDate.AddMonths(-i).Date);
+            }
+            return months;
+        }
 
         [Authorize(Roles = "Client")]
-        [Route("/financial-analysis")]
-        public async Task<IActionResult> ClientFinancialAnalysis()
+        [Route("/client-financial-analysis")]
+        public async Task<IActionResult> ClientFinancialAnalysis(DateTime?date=null)
         {
             var client = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
 
@@ -257,7 +281,7 @@ namespace DDAC_Project.Controllers
             }
 
 
-            var result = await FinancialAnalysis(client) as ViewResult;
+            var result = await FinancialAnalysis(client, date) as ViewResult;
             if (result != null)
             {
                 return View("FinancialAnalysis", result.Model);
@@ -266,6 +290,7 @@ namespace DDAC_Project.Controllers
         }
 
         [Authorize(Roles = "Advisor")]
+        [Route("/select-user")]
         public async Task<IActionResult> SelectUser()
         {
             var advisorId = Convert.ToInt32(HttpContext.Session.GetInt32("AdvisorId"));

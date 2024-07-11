@@ -1,38 +1,37 @@
 ﻿@model DDAC_Project.Controllers.AdvisorController.IndexViewModel
 @{
+    ViewData["Title"] = "Client Dashboard";
 }
 
-<div style="display: flex; flex-direction: row; margin: 40px; justify-content: center; text-align: center">
-    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 150px">
-        <div style="background-color: #f0f0f0">
-            <h5 style="padding: 10px">Total Assigned Clients</h5>
-        </div>
-        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">@Model.ClientCount / 3</p>
+<div class="container row gy-3" style="width: 100%; margin: 0 auto; justify-content:space-between">
+    <div class="col me-5" style="height: 25vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Assigned Clients</h2>
+        <p style="font-weight: 500; font-size: 2.5rem; padding: 0; margin: 0; line-height: normal">@Model.ClientCount / 3</p>
     </div>
-    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 150px; margin-left: 80px; margin-right: 80px">
-        <div style="background-color: #f0f0f0">
-            <h5 style="padding: 10px">Total Comments This Month</h5>
-        </div>
-        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">@Model.CommentCount</p>
+    <div class="col me-5" style="height: 25vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Comments This Month</h2>
+        <p style="font-weight: 500; font-size: 2.5rem; padding: 0; margin: 0; line-height: normal">@Model.CommentCount</p>
     </div>
-    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 350px; height: 150px">
-        <div style="background-color: #f0f0f0">
-            <h5 style="padding: 10px">Total Managed Assets</h5>
-        </div>
-        <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Model.ManagedAssets.ToString("N2")</p>
+    <div class="col" style="height: 25vh;border:solid 1px lightgrey; border-radius:10px; padding: 1.25em; position:relative">
+        <h2 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Managed Assets</h2>
+        <p style="font-weight: 500; font-size: 2.5rem; padding: 0; margin: 0; line-height: normal">RM @Model.ManagedAssets.ToString("N2")</p>
     </div>
-</div>
-<div style="display: flex; flex-direction: row; justify-content: space-between; width:75%; margin: 0 auto 40px auto">
-    <div style="width: 55%">
-        <canvas id="myChart" Style="height:400px; width: 100%"></canvas>
+    <div style="display:flex; flex-direction: row; justify-content: space-between; margin-top:0">
+        <h2 style="margin: 0.5em 0 0.25em 0; line-height: normal;font-size: 1.5rem; width:fit-content">Client's Managed Assets</h2>
+        <h2 style="margin: 0.5em 0 0.25em 0; line-height: normal;font-size: 1.5rem; width:fit-content">Assigned Clients</h2>
+    </div>
+
+
+    <div class="col-8 mt-0 me-3" style="height: 50vh;border:solid 1px lightgrey; border-radius:10px; width:65%">
+        <canvas id="myChart" Style="height:100%; width: 100%"></canvas>
 
         <script>
             var ctx = document.getElementById('myChart').getContext('2d');
             var clientData = @Html.Raw(Json.Serialize(Model.ClientAssets));
-    
+
             // Define an array of colors
-                    var colors = ['rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(216, 235, 52, 0.7)'];
-    
+            var colors = ['rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(216, 235, 52, 0.7)'];
+
             var myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -46,11 +45,12 @@
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value, index, values) {
+                                callback: function (value, index, values) {
                                     return 'RM ' + value.toFixed(2);
                                 }
                             }
@@ -59,7 +59,7 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return 'RM ' + context.parsed.y.toFixed(2);
                                 }
                             }
@@ -72,27 +72,27 @@
             });
         </script>
     </div>
-    <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border: groove; border-radius: 5px; width: 40%; margin-left: 100px">
-        <div style="background-color: #f0f0f0">
-            <h4 style="padding: 10px">Assigned Clients</h4>
-            <p style="padding: 10px">Client(s) under you.</p>
-        </div>
-        <p style="padding: 10px">Client List(s)</p>
+    <div class="col-4 mt-0" style="height: 50vh;border:solid 1px lightgrey; border-radius:10px; width:30%; padding:1.25em">
+        <p style="font-size: 1.25rem; color: slategrey; margin-bottom: 0; font-weight:500; width:fit-content">Client List(s)</p>
+
+            <p style="margin:0; width:fit-content; font-weight:500">Client(s) under you.</p>
         @if (!Model.AssignedClients.Any())
         {
             <p style="padding: 10px">No clients assigned yet.</p>
         }
         else
         {
+            <div style="display:flex; flex-direction: column; justify-content: space-around; height: 80%">
             @foreach (var client in Model.AssignedClients)
             {
-                <div style="display: flex; flex-direction: row; justify-content: space-between; padding: 10px">
+                <div style="display: flex; flex-direction: row; justify-content: space-between; padding: 0">
                     <p><i class="fa-regular fa-user"></i>&nbsp;&nbsp;&nbsp;@($"{client.FirstName} {client.LastName}")</p>
                     <a asp-controller="Advisor" asp-action="FinancialAnalysis" asp-route-clientId="@client.ClientID" asp-route-fullName="@($"{client.FirstName} {client.LastName}")" style="color:black; font-size: 20px; margin-left: auto">
                         <i class="fa-solid fa-chart-pie"></i>
                     </a>
                 </div>
             }
+            </div>
         }
     </div>
 </div>

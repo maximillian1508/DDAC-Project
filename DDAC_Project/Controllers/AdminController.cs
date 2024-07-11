@@ -12,10 +12,12 @@ using System.Text.Encodings.Web;
 using System.Text;
 using DDAC_Project.Areas.Identity.Pages.Account;
 using static DDAC_Project.Controllers.AdvisorController;
+using Microsoft.AspNetCore.Authentication;
+using DDAC_Project.Constants;
 
 namespace DDAC_Project.Controllers
 {
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly SignInManager<DDAC_ProjectUser> _signInManager;
@@ -42,6 +44,8 @@ namespace DDAC_Project.Controllers
             public int? ClientCount { get; set; }
             public decimal ManagedAssets { get; set; }
             public decimal TransactionCount { get; set; }
+
+            public List<TotalAssetModel> TotalAssetsPerUser { get; set; }
 
         }
 
@@ -77,42 +81,79 @@ namespace DDAC_Project.Controllers
             public string YearOfExperience { get; set; }
         }
 
+        public class TotalAssetModel
+        {
+            public string AdvisorEmail { get; set; }
+            public string ClientEmail { get; set; }
+
+            public string ClientName { get; set; }
+            public decimal TotalAsset { get; set; }
+
+            public string ClientUserId { get; set; }
+        }
+
+        [Route("/admin-dashboard")]
         public async Task<IActionResult> Index()
         {
-            if (!_signInManager.IsSignedIn(User)) 
+            if (!User.IsInRole(UserRoles.Admin))
             {
+                await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
                 return Challenge();
             }
             var totalClient = await _context.Clients.CountAsync();
 
-            var totalManagedAssets = await _context.Transactions.SumAsync(t => t.Amount);
+            var totalIncome = await _context.Transactions.Where(t => t.Category.Type == "Income").SumAsync(t => t.Amount);
+            var totalExpense = await _context.Transactions.Where(t => t.Category.Type == "Expense").SumAsync(t => t.Amount);
 
-            DateTime currentDate = DateTime.Today;
-            DateTime startDateOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
-            DateTime endDateOfMonth = startDateOfMonth.AddMonths(1).AddDays(-1);
+            var totalManagedAssets = totalIncome - totalExpense;
+
             var totalTransactions = await _context.Transactions
-                .Where(t => t.Date >= startDateOfMonth && t.Date <= endDateOfMonth)
+                .Where(t => t.Date.Month == DateTime.Now.Month && t.Date.Year <= DateTime.Now.Year)
                 .CountAsync();
 
+            List<TotalAssetModel> totalAssetsPerUser = await _context.Transactions
+                .GroupBy(t => new 
+                { ClientUserId = t.Client.UserId, 
+                  ClientEmail = t.Client.User.Email, 
+                  AdvisorEmail = t.Client.Advisor.User.Email,
+                  ClientFirstName = t.Client.User.FirstName,
+                  ClientLastName = t.Client.User.LastName
+                })
+                .Select(g => new TotalAssetModel
+                {
+                    ClientEmail = g.Key.ClientEmail,
+                    ClientUserId = g.Key.ClientUserId,
+                    AdvisorEmail = g.Key.AdvisorEmail,
+                    TotalAsset = g.Where(t => t.Category.Type == "Income").Sum(t => t.Amount) -
+                                 g.Where(t => t.Category.Type == "Expense").Sum(t => t.Amount),
+                    ClientName = g.Key.ClientFirstName + " " + g.Key.ClientLastName
+                })
+                .OrderByDescending(t => t.TotalAsset)
+                .Take(4)
+                .ToListAsync();
 
-            //var totalComment = await _context.Comments.Where(comment => comment.AdvisorId == advisorId).CountAsync();
 
             var viewModel = new IndexViewModel
             {
                 ClientCount = totalClient,
                 ManagedAssets = totalManagedAssets,
-                TransactionCount = totalTransactions
+                TransactionCount = totalTransactions,
+                TotalAssetsPerUser = totalAssetsPerUser,
             };
 
             return View("Index", viewModel);
-        }    
-        
+        }
+
+        [Route("/manage-user")]
         public async Task<IActionResult> ManageUser()
         {
             var user = await _userManager.GetUserAsync(User);
 
-            if (!_signInManager.IsSignedIn(User))
+            if (!User.IsInRole(UserRoles.Admin))
             {
+                await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
                 return Challenge();
             }
 
@@ -129,13 +170,13 @@ namespace DDAC_Project.Controllers
 
                 })
                 .ToListAsync();
-            
+
 
 
             return View(userData);
         }
 
-        public async Task<IActionResult> DeleteData(string UserId)
+        public async Task<IActionResult> DeleteUser(string UserId)
         {
             if (UserId == null)
             {
@@ -172,12 +213,13 @@ namespace DDAC_Project.Controllers
             return RedirectToAction("ManageUser", "Admin");
         }
 
+        [Route("/add-admin")]
         public IActionResult AddAdmin()
         {
-
             return View();
         }
 
+        [Route("/add-admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAdmin(CreateAdminModel admin)
@@ -192,19 +234,21 @@ namespace DDAC_Project.Controllers
             user.EmailConfirmed = true;
             user.UserType = "Admin";
 
-                await _userStore.SetUserNameAsync(user, admin.Email, CancellationToken.None);
-                 await _userManager.CreateAsync(user, admin.Password);
+            await _userStore.SetUserNameAsync(user, admin.Email, CancellationToken.None);
+            await _userManager.CreateAsync(user, admin.Password);
             await _userManager.AddToRoleAsync(user, Constants.UserRoles.Admin);
 
             return RedirectToAction("ManageUser");
         }
 
+        [Route("/add-advisor")]
         public IActionResult AddAdvisor()
         {
 
             return View();
         }
 
+        [Route("/add-advisor")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAdvisor(CreateAdvisorModel advisor)

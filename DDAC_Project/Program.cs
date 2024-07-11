@@ -5,6 +5,8 @@ using DDAC_Project.Areas.Identity.Data;
 using DDAC_Project.Constants;
 using DDAC_Project.Models;
 using DDAC_Project;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using ASPNETCoreIdentityDemo.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DDAC_ProjectContextConnection") ?? throw new InvalidOperationException("Connection string 'DDAC_ProjectContextConnection' not found.");
@@ -24,6 +26,7 @@ builder.Services.AddAuthorization(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddTransient<ISenderEmail, EmailSender>();
 builder.Services.AddRazorPages();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -49,6 +52,8 @@ using (var scope = app.Services.CreateScope())
     // Seed Admin User
     var adminUser = new DDAC_ProjectUser
     {
+        FirstName = "Default",
+        LastName = "Admin",
         UserName = "admin@fiscella.com",
         Email = "admin@fiscella.com",
         EmailConfirmed = true,
@@ -57,6 +62,8 @@ using (var scope = app.Services.CreateScope())
 
     var advisorUser = new DDAC_ProjectUser
     {
+        FirstName = "Default",
+        LastName = "Advisor",
         UserName = "advisor@fiscella.com",
         Email = "advisor@fiscella.com",
         EmailConfirmed = true,
