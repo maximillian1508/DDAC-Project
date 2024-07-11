@@ -67,6 +67,7 @@ namespace DDAC_Project.Controllers
             public bool? isDefault { get; set; }
         }
 
+
         [Route("/client-dashboard")]
         public async Task<IActionResult> Index()
         {
@@ -216,6 +217,128 @@ namespace DDAC_Project.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
+        }
+
+        [Route("/edit-income")]
+        public async Task<IActionResult> EditIncome(int? TransactionId)
+        {
+            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+
+            if (TransactionId == null)
+            {
+                return NotFound();
+            }
+            var transaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.TransactionId == TransactionId);
+
+            if (transaction == null)
+            {
+                return BadRequest(TransactionId + " is not found in the table!");
+            }
+
+            // Fetch categories
+            var categories = await _context.Categories
+                .Where(c => (c.Type == "Income" && c.ClientId == clientId) || (c.Type == "Income" && c.IsDefault == true))
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
+                })
+                .ToListAsync();
+
+            ViewBag.Categories = categories;     
+
+            transaction.CategoryId ??= categories.FirstOrDefault()?.Value != null
+                    ? int.Parse(categories.First().Value)
+                    : (int?)null;
+            
+            var goals = await _context.Goals
+                .Where(c => c.ClientId == clientId)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.GoalId.ToString(),
+                    Text = c.Name
+                })
+                .ToListAsync();
+            ViewBag.TransactionDate = transaction.Date.ToLongDateString();
+
+            goals.Insert(0, new SelectListItem { Value = "", Text = "" });
+
+            ViewBag.Goals = goals;
+            return View(transaction);
+        }        
+        
+        [Route("/edit-expense")]
+        public async Task<IActionResult> EditExpense(int? TransactionId)
+        {
+            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+
+            if (TransactionId == null)
+            {
+                return NotFound();
+            }
+            var transaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.TransactionId == TransactionId);
+
+            if (transaction == null)
+            {
+                return BadRequest(TransactionId + " is not found in the table!");
+            }
+
+            // Fetch categories
+            var categories = await _context.Categories
+                .Where(c => (c.Type == "Expense" && c.ClientId == clientId) || (c.Type == "Expense" && c.IsDefault == true))
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
+                })
+                .ToListAsync();
+            ViewBag.TransactionDate = transaction.Date.ToLongDateString();
+
+
+            ViewBag.Categories = categories;     
+            
+            return View(transaction);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateTransaction(Transaction transaction)
+        {
+            try
+            {
+                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                transaction.ClientId = clientId;
+                if (transaction.GoalId == 0)
+                {
+                    transaction.GoalId = null;
+                }
+                _context.Transactions.Update(transaction);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("ClientFinancialAnalysis", "Advisor");
+                //return View("EditGoal", goal);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error: " + ex.Message);
+            }
+        }
+
+        public async Task<IActionResult> DeleteTransaction(int? TransactionId)
+        {
+            if (TransactionId== null)
+            {
+                return NotFound();
+            }
+            var transaction = await _context.Transactions.FindAsync(TransactionId);
+            if (transaction == null)
+            {
+                return BadRequest(TransactionId + " is not found in the list!");
+            }
+            _context.Transactions.Remove(transaction);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ClientFinancialAnalysis", "Advisor");
         }
 
         [Route("/goals")]

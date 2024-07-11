@@ -1,34 +1,62 @@
 ﻿@model DDAC_Project.Controllers.AdvisorController.FinancialAnalysisModel
+@using Microsoft.AspNetCore.Identity
+@using DDAC_Project.Areas.Identity.Data
+@using DDAC_Project.Constants
+
+@inject UserManager<DDAC_ProjectUser> UserManager
+
 @{
-    var fullName = Model.FullName;
+    ViewData["Title"] = "Financial Analysis";
 }
 
-<h2 style="padding: 15px 0px 15px 95px; color: dimgray">Financial Analysis of @fullName</h2>
-<div class="container" style="width:90%">
-    <div class="row" style="column-gap: 4em; width:100%; margin: 0 auto 0 auto; justify-content: center">
-        <div class="col-7">
-            <div class="row" style="justify-content: space-between; text-align: center">
-                <div class="col-4" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); width: 30%; border-radius: 5px; height: 25vh">
-                    <div style="background-color: #f0f0f0">
-                        <h4 style="padding: 10px">Total Income</h4>
-                    </div>
-                    <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Model.TotalIncome.ToString("N2")</p>
+
+@if (User.IsInRole(UserRoles.Advisor))
+{
+    <h2 style="padding: 15px 0 0 0; color: dimgray">Financial Analysis of @Model.FullName</h2>
+}
+<div class="container" style="width:100%; margin-top: 15px">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @if (Model.CurrentDate > Model.AvailableMonths.Last())
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action((User.IsInRole(UserRoles.Advisor)?"FinancialAnalysis":"ClientFinancialAnalysis"), new { clientId = Model.ClientId, date = Model.CurrentDate.AddMonths(-1) })">&laquo; Previous</a>
+                </li>
+            }
+
+                <li class="page-item">
+                <a class="page-link" href="@Url.Action((User.IsInRole(UserRoles.Advisor)?"FinancialAnalysis":"ClientFinancialAnalysis"), new { clientId = Model.ClientId, date = Model.CurrentDate.Month })">
+                        @Model.CurrentDate.ToString("MMMM yyyy")
+                    </a>
+                </li>
+            
+
+            @if (Model.CurrentDate < DateTime.Now.Date)
+            {
+                <li class="page-item">
+                <a class="page-link" href="@Url.Action((User.IsInRole(UserRoles.Advisor)?"FinancialAnalysis":"ClientFinancialAnalysis"), new { clientId = Model.ClientId, date = Model.CurrentDate.AddMonths(1) })">Next &raquo;</a>
+                </li>
+            }
+        </ul>
+    </nav>
+    <div class="row" style="width:100%; margin: 0 auto 0 auto; justify-content: space-between">
+        <div class="col-8">
+            <div class="row" style="justify-content: space-between;">
+                <div class="col me-2" style="width: 30%; height: 20vh; border:solid 1px lightgrey; border-radius:10px;padding: 1em">
+                    <h4 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Income</h4>
+                    <p style="font-weight: 500;word-wrap: break-word; font-size: 1.75rem; padding: 0; margin: 0; line-height: normal">RM @Model.TotalIncome.ToString("N2")</p>
                 </div>
-                <div class="col-4" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border-radius: 5px; width: 30%; height: 25vh;">
-                    <div style="background-color: #f0f0f0">
-                        <h4 style="padding: 10px">Total Expense</h4>
-                    </div>                                                                                              <!--Math.Abs is to remove negative sign (- sign)-->
-                    <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Math.Abs(Model.TotalExpense).ToString("N2")</p>
+                <div class="col me-2" style="width: 30%; height: 20vh; border:solid 1px lightgrey; border-radius:10px;padding: 1em">
+                    <h4 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Total Expense</h4>
+                    <p style="font-weight: 500; word-wrap: break-word; font-size: 1.75rem; padding: 0; margin: 0; line-height: normal">RM @Math.Abs(Model.TotalExpense).ToString("N2")</p>
                 </div>
-                <div class="col-4" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); border-radius: 5px; width: 30%; height: 25vh">
-                    <div style="background-color: #f0f0f0">
-                        <h4 style="padding: 10px">Net Balance</h4>
-                    </div>
-                    <p style="display: flex; justify-content: center; font-size: 27px; font-weight: bold; padding-top: 18px">RM @Model.NetBalance.ToString("N2")</p>
+                <div class="col" style="width: 30%; height: 20vh; border:solid 1px lightgrey; border-radius:10px;padding: 1em">
+                    <h4 style="font-size: 1.25rem; color: slategrey; margin-bottom: 0">Net Balance</h4>
+                    <p style="font-weight: 500; word-wrap: break-word; font-size: 1.75rem; padding: 0; margin: 0; line-height: normal">RM @Model.NetBalance.ToString("N2")</p>
                 </div>
             </div>
-            <div class="row" style="margin-top: 2em">
-                <div class="col-6" style="border: solid 1px; height: 45.5vh">
+            <div class="row" style="margin-top: 1.5em">
+                <div class="col-6" style="border: solid 1px lightgrey; height: 50vh; border-radius: 10px">
                     <canvas id="incomePieChart"></canvas>
 
                     <script>
@@ -55,11 +83,12 @@
                                         'rgba(153, 102, 255, 1)',
                                         'rgba(255, 159, 64, 1)'
                                     ],
-                                    borderWidth: 1
+                                    borderWidth: 1,
                                 }]
                             },
                             options: {
                                 responsive: true,
+                                maintainAspectRatio: false,
                                 plugins: {
                                     legend: {
                                         position: 'top',
@@ -87,7 +116,7 @@
                         });
                     </script>
                 </div>
-                <div class="col-6" style="border: solid 1px; border-left: none; height: 45.5vh">
+                <div class="col-6" style="border: solid 1px lightgrey; border-left: none; border-radius:10px; height: 50vh">
                     <canvas id="expensePieChart"></canvas>
 
                     <script>
@@ -119,6 +148,7 @@
                             },
                             options: {
                                 responsive: true,
+                                maintainAspectRatio: false,
                                 plugins: {
                                     legend: {
                                         position: 'top',
@@ -148,24 +178,34 @@
                 </div>
             </div>
         </div>
-        <div class="col-4" style="height: 75vh; border:groove">
-            <h3 style="text-align: center">Comments</h3>
-            <div id="comment-container" class="comment-container" style="overflow-y: auto; height: calc(100% - 100px);">
+        <div class="col-4" style="border:solid 1px lightgrey;border-radius:10px; width: 30%; margin-left:1em; height:74.5vh">
+            <h3 class="mt-2" style="text-align: center">Comments</h3>
+            <div id="comment-container" class="comment-container" style="overflow-y: auto; height: @(User.IsInRole(UserRoles.Client) ? "85%" : "75%"); margin-bottom: 0.5em">
                 @foreach (var comment in Model.CommentHistory)
                 {
-                    <div class="comment" style="margin-bottom: 1em; display: flex; justify-content: space-between;">
-                        <div class="comment-text" style="max-width: 70%; word-wrap: break-word;">@comment.CommentText</div>
-                        <div class="comment-date" style="text-align: right; font-size: 0.9em; color: #777;">@comment.Date.ToString("MMM dd, yyyy HH:mm")</div>
+                    <div class="comment" style="margin-bottom: 1em;">
+                        @if (User.IsInRole(UserRoles.Client))
+                        {
+                            <p style="font-weight: 500; margin: 0">@(!String.IsNullOrEmpty(comment.AdvisorName) ? comment.AdvisorName : "Advisor")</p>
+                        }
+                        <div style="display: flex; justify-content: space-between">
+                            <p class="comment-text" style="max-width: 70%; word-wrap: break-word; margin: 0;">@comment.CommentText</p>
+                            <p class="comment-date" style="text-align: right; font-size: 0.9em; color: #777; margin: 0">@comment.Date.ToString("MMM dd, yyyy HH:mm")</p>
+                        </div>
                     </div>
                 }
             </div>
-            <form id="comment-form">
-                <input type="hidden" name="clientId" value="@Model.ClientId" />
-                <div class="input-group" style="margin-top: 1em;">
-                    <input type="text" class="form-control" name="commentText" id="commentText" placeholder="Add a comment" aria-label="Add a comment" required>
-                    <button class="btn btn-outline-secondary" type="submit">Submit</button>
-                </div>
-            </form>
+
+            @if (User.IsInRole(UserRoles.Advisor) && Model.CurrentDate.Month >= DateTime.Now.Month )
+            {
+                <form id="comment-form" style="bottom: 0; width: 90%; margin: auto auto 1em auto">
+                    <input type="hidden" name="clientId" value="@Model.ClientId" />
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="commentText" id="commentText" placeholder="Add a comment" aria-label="Add a comment" required>
+                        <button class="btn btn-outline-secondary" type="submit">Submit</button>
+                    </div>
+                </form>
+            }
         </div>
         @section Scripts {
             <script>
@@ -179,10 +219,11 @@
                             data: formData,
                             success: function (result) {
                                 if (result.success) {
-                                    var newComment = '<div class="comment" style="margin-bottom: 1em; display: flex; justify-content: space-between;">' +
-                                        '<div class="comment-text" style="max-width: 70%; word-wrap: break-word;">' + result.commentText + '</div>' +
-                                        '<div class="comment-date" style="text-align: right; font-size: 0.9em; color: #777;">' + result.date + '</div>' +
-                                        '</div>';
+                                    var newComment = '<div class="comment" style="margin-bottom: 1em;">' +
+                                        '<div style="display: flex; justify-content: space-between">' +
+                                        '<p class="comment-text" style="max-width: 70%; word-wrap: break-word; margin: 0;">' + result.commentText + '</p>' +
+                                        '<p class="comment-date" style="text-align: right; font-size: 0.9em; color: #777; margin: 0">' + result.date + '</p>' +
+                                        '</div></div>';
                                     $('#comment-container').prepend(newComment);
                                     $('#commentText').val('');
                                 } else {
@@ -198,30 +239,75 @@
                 });
             </script>
         }
-        <div class="row" style="width: 75%; height: 50vh; border: groove; margin: 2em auto; text-align: center">
+        <div class="row" style="width: 100%; height: 50vh; border: solid 1px lightgrey; border-radius: 10px; margin: 2em auto; text-align: center">
             <div style="overflow-y: auto; height: 100%; position:relative">
-                <table class="table table-striped">
-                    <h3>Transaction History</h3>
+                <h3 class="mt-2">Transaction History</h3>
+                <table class="table table-hover">
                     <thead style="position: sticky; top:0">
                         <tr>
+                            <th scope="col">#</th>
                             <th>Date</th>
-                            <th>Goal</th>
-                            <th>Category</th>
-                            <th>Amount</th>
                             <th>Description</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Goal</th>
+                            @if (User.IsInRole(UserRoles.Client) && Model.CurrentDate.Month >= DateTime.Now.Month)
+                            {
+                                <th></th>
+                                <th></th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var transaction in Model.TransactionHistory)
                         {
                             <tr>
+                                <th scope="row">@(Model.TransactionHistory.IndexOf(transaction) + 1)</th>
                                 <td>@transaction.Date.ToShortDateString()</td>
-                                <td>@(transaction.GoalName ?? "-")</td>
+                                <td>@(transaction.Description ?? "-")</td>
+                                @if (transaction.Type == "Income")
+                                {
+                                    <td class="text-success">
+                                        RM @transaction.Amount.ToString("N2")
+                                    </td>
+                                }
+                                else if (transaction.Type == "Expense")
+                                {
+                                    <td class="text-danger">
+                                        -RM @transaction.Amount.ToString("N2")
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="text-dark">
+                                        RM @transaction.Amount.ToString("N2")
+                                    </td>
+                                }
+                                <td>@transaction.Type</td>
                                 <td>@transaction.CategoryName</td>
-                                <td class="@(transaction.Amount >= 0 ? "text-success" : "text-danger")">
-                                    RM @transaction.Amount.ToString("N2")
-                                </td>
-                                <td>@transaction.Description</td>
+                                <td>@(transaction.GoalName ?? "-")</td>
+                                @if (User.IsInRole(UserRoles.Client) && Model.CurrentDate.Month >= DateTime.Now.Month)
+                                {
+
+                                    <td style="text-align: center; vertical-align:middle">
+                                        @if (transaction.Type == "Income")
+                                        {
+                                            <a asp-action="EditIncome" asp-controller="Client" asp-route-TransactionId="@transaction.TransactionId"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        }
+                                        else if (transaction.Type == "Expense")
+                                        {
+                                            <a asp-action="EditExpense" asp-controller="Client" asp-route-TransactionId="@transaction.TransactionId"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        }
+                                        else if (!String.IsNullOrEmpty(transaction.GoalName))
+                                        {
+                                            <a asp-action="EditIncome" asp-controller="Client" asp-route-TransactionId="@transaction.TransactionId"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        }
+                                    </td>
+                                    <td style="text-align: center; vertical-align:middle">
+                                        <a asp-action="DeleteTransaction" asp-controller="Client" asp-route-TransactionId="@transaction.TransactionId" style="color: red"><i class="fa-solid fa-trash-can"></i></a>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>

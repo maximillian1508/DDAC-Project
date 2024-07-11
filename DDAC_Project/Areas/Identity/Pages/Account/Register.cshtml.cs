@@ -23,6 +23,7 @@ using Microsoft.Extensions.Configuration.UserSecrets;
 using DDAC_Project.Models;
 using Microsoft.EntityFrameworkCore;
 using DDAC_Project.Data;
+using ASPNETCoreIdentityDemo.Models;
 
 namespace DDAC_Project.Areas.Identity.Pages.Account
 {
@@ -33,7 +34,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
         private readonly IUserStore<DDAC_ProjectUser> _userStore;
         private readonly IUserEmailStore<DDAC_ProjectUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        private readonly IEmailSender _emailSender;
+        private readonly ISenderEmail _emailSender;
         private readonly DDAC_ProjectContext _context;
 
         public RegisterModel(
@@ -41,7 +42,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
             IUserStore<DDAC_ProjectUser> userStore,
             SignInManager<DDAC_ProjectUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender,
+            ISenderEmail emailSender,
             DDAC_ProjectContext context
             )
         {
@@ -172,11 +173,12 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
                         protocol: Request.Scheme);
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.", true);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                        return RedirectToPage("Login");
+                        //return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
                     else
                     {

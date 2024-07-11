@@ -43,6 +43,7 @@ namespace DDAC_Project.Controllers
             return View();
         }
 
+        [Route("about-us")]
         public async Task<IActionResult> AboutUs()
         {
             if (User.Identity.IsAuthenticated)
@@ -71,7 +72,8 @@ namespace DDAC_Project.Controllers
         {
             return new RedirectResult(Url.Action("AboutUs") + "#contact");
         }
-        
+
+        [Route("/features")]
         public async Task<IActionResult> Features()
         {
             if (User.Identity.IsAuthenticated)
