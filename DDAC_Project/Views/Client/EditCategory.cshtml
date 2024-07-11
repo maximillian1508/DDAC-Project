@@ -12,6 +12,7 @@
             <input class="form-control" asp-for="Name" placeholder="Enter category name">
             <span asp-validation-for="Name"></span>
         </div>
+        <input type="hidden" asp-for="Type" readonly/>
         <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Update Goal</button>
     </form>
 </div>
