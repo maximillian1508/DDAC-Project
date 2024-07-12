@@ -506,13 +506,17 @@ namespace DDAC_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> AddCategory(Category newCategory)
         {
-            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
-            newCategory.ClientId = clientId;
-            Console.WriteLine(clientId);
-            _context.Categories.Add(newCategory);
-            await _context.SaveChangesAsync();
+            if (ModelState.IsValid)
+            {
+                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                newCategory.ClientId = clientId;
+                Console.WriteLine(clientId);
+                _context.Categories.Add(newCategory);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("ManageCategory");
+            }
+            return View(newCategory);
 
-            return RedirectToAction("ManageCategory");
         }
 
         [Route("/edit-category")]

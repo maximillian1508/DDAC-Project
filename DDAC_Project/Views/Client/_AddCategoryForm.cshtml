@@ -6,7 +6,7 @@
     <div class="mb-3">
         <label asp-for="Name" class="form-label" style="font-weight: 500">Category Name</label>
         <input class="form-control" asp-for="Name" placeholder="Enter category name">
-        <span asp-validation-for="Name"></span>
+        <span asp-validation-for="Name" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="Type" class="form-label" style="font-weight: 500">Target Amount</label>
@@ -18,3 +18,9 @@
     </div>
     <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Add a new category</button>
 </form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
