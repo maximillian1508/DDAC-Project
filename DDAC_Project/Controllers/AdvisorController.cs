@@ -128,9 +128,15 @@ namespace DDAC_Project.Controllers
             var totalComment = await _context.Comments.Where(comment => comment.AdvisorId == advisorId).CountAsync();
 
             var clientIds = GetClientIdsForAdvisor(advisorId);
-            var totalManagedAssets = await _context.Transactions
-                .Where(t => clientIds.Contains(t.ClientId))
+            var totalIncome = await _context.Transactions
+                .Where(t => clientIds.Contains(t.ClientId) && t.Category.Type == "Income")
+                .SumAsync(t => t.Amount); 
+            
+            var totalExpense = await _context.Transactions
+                .Where(t => clientIds.Contains(t.ClientId) && t.Category.Type == "Expense")
                 .SumAsync(t => t.Amount);
+
+            var totalManagedAssets = totalIncome - totalExpense;
 
             var assignedClients = await _context.Clients
                 .Where(c => c.AdvisorId == advisorId)
@@ -144,9 +150,8 @@ namespace DDAC_Project.Controllers
                         PhoneNumber = c.User.PhoneNumber,
                         ClientID = c.ClientId.ToString()
                     },
-                    TotalAssets = _context.Transactions
-                        .Where(t => t.ClientId == c.ClientId)
-                        .Sum(t => t.Amount) 
+                    TotalAssets = _context.Transactions.Where(t => t.ClientId == c.ClientId && t.Category.Type == "Income").Sum(t => t.Amount) - 
+                                     _context.Transactions.Where(t => t.ClientId == c.ClientId && t.Category.Type == "Expense").Sum(t => t.Amount) 
                 })
                 .ToListAsync();
 

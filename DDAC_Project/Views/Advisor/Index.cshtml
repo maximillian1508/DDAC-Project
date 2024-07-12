@@ -75,14 +75,14 @@
     <div class="col-4 mt-0" style="height: 50vh;border:solid 1px lightgrey; border-radius:10px; width:30%; padding:1.25em">
         <p style="font-size: 1.25rem; color: slategrey; margin-bottom: 0; font-weight:500; width:fit-content">Client List(s)</p>
 
-            <p style="margin:0; width:fit-content; font-weight:500">Client(s) under you.</p>
+            <p style="margin:0 0 1em 0; width:fit-content; font-weight:500">Client(s) under you.</p>
         @if (!Model.AssignedClients.Any())
         {
             <p style="padding: 10px">No clients assigned yet.</p>
         }
         else
         {
-            <div style="display:flex; flex-direction: column; justify-content: space-around; height: 80%">
+            <div style="display:flex; flex-direction: column; height: 80%">
             @foreach (var client in Model.AssignedClients)
             {
                 <div style="display: flex; flex-direction: row; justify-content: space-between; padding: 0">
