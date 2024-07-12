@@ -12,10 +12,11 @@ namespace DDAC_Project.Models
         [Required]
         public required int ClientId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Goal name is required")]
         public required string Name { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Target amount is required")]
+        [RegularExpression(@"^[1-9]+$", ErrorMessage = "Target amount must be more than 0")]
         [Column(TypeName = "decimal(18,2)")]
         public required decimal TargetAmount { get; set; }
 

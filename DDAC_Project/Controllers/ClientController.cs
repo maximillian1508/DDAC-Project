@@ -383,13 +383,17 @@ namespace DDAC_Project.Controllers
         [HttpPost]
         public async Task<IActionResult> AddGoal(Goal newGoal)
         {
-            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
-            newGoal.ClientId = clientId;
-            Console.WriteLine(clientId);
-            _context.Goals.Add(newGoal);
-            await _context.SaveChangesAsync();
+            if (ModelState.IsValid)
+            {
+                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                newGoal.ClientId = clientId;
+                Console.WriteLine(clientId);
+                _context.Goals.Add(newGoal);
+                await _context.SaveChangesAsync();
 
-            return RedirectToAction("Goals");
+                return RedirectToAction("Goals");
+            }
+            return View(newGoal);
         }
 
         [Route("/edit-goal")]
