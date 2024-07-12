@@ -38,7 +38,7 @@ namespace DDAC_Project.Controllers
         public class TransactionModel
         {
             public string? Description { get; set; }
-            public decimal? Amount { get; set; }
+            public decimal Amount { get; set; }
             public string? Date{ get; set; }
             public string? GoalName { get; set; }
             public string? CategoryName { get; set; }
@@ -166,19 +166,22 @@ namespace DDAC_Project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddIncome(Transaction transaction)
         {
-
-            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
-            transaction.ClientId = clientId;
-
-            if (transaction.GoalId == 0)
+            if (ModelState.IsValid)
             {
-                transaction.GoalId = null;
+                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                transaction.ClientId = clientId;
+
+                if (transaction.GoalId == 0)
+                {
+                    transaction.GoalId = null;
+                }
+
+                _context.Transactions.Add(transaction);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Index");
             }
-
-            _context.Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("Index");
+            return View(transaction);
         }
 
         [HttpGet]
@@ -209,14 +212,17 @@ namespace DDAC_Project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddExpense(Transaction transaction)
         {
+            if (ModelState.IsValid)
+            {
+                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                transaction.ClientId = clientId;
 
-            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
-            transaction.ClientId = clientId;
+                _context.Transactions.Add(transaction);
+                await _context.SaveChangesAsync();
 
-            _context.Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("Index");
+                return RedirectToAction("Index");
+            }
+            return View(transaction);   
         }
 
         [Route("/edit-income")]

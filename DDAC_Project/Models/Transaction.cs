@@ -16,8 +16,9 @@ namespace DDAC_Project.Models
         
         public int ? GoalId { get; set; }
 
-        [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Required(ErrorMessage = "Amount is required")]
+        [RegularExpression(@"^[1-9]+$", ErrorMessage = "Amount must be more than 0")]
         public required decimal Amount { get; set; }
 
         [Required]
