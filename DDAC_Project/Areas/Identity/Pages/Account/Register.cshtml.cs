@@ -177,7 +177,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        return RedirectToPage("Login");
+                        return RedirectToPage("Login", new {returnUrl = returnUrl, onRegister = true });
                         //return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
                     else

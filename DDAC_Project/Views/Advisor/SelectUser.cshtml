@@ -1,7 +1,9 @@
 ﻿@model List<DDAC_Project.Controllers.AdvisorController.UserModel>
 @{
+    ViewData["Title"] = "Select User";
     var userCount = Model?.Count ?? 0;
 }
+
 <h2 style="padding: 15px 0px 15px 10px; color: dimgray; margin-bottom: 0">Select Client</h2>
 <div style="background-color: #f0f0f0;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); display: flex; flex-direction: row; justify-content: space-between; padding: 50px; border-radius: 10px">
     @for (int i = 0; i < 3; i++)

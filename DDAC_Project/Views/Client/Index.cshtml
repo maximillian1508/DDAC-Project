@@ -103,7 +103,18 @@
                         <tr>
                             <td>@transaction.Date</td>
                             <td>@(String.IsNullOrEmpty(transaction.Description) ? "-" : transaction.Description)</td>
-                            <td>RM @transaction.Amount</td>
+                            @if (transaction.Type == "Income")
+                            {
+                                <td class="text-success">
+                                    RM @transaction.Amount
+                                </td>
+                            }
+                            else if (transaction.Type == "Expense")
+                            {
+                                <td class="text-danger">
+                                    -RM @transaction.Amount
+                                </td>
+                            }
                             <td>@transaction.Type</td>
                             <td>@transaction.CategoryName</td>
                             <td>@(String.IsNullOrEmpty(transaction.GoalName) ? "-" : transaction.GoalName)</td>
