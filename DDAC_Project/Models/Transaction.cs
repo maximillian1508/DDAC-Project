@@ -18,7 +18,7 @@ namespace DDAC_Project.Models
 
         [Column(TypeName = "decimal(18,2)")]
         [Required(ErrorMessage = "Amount is required")]
-        [Range(typeof(decimal), "0,01", "79228162514264337593543950335", ErrorMessage = "Amount must be more than 0")]
+        [Range(typeof(decimal), "0.01", "79228162514264337593543950335", ErrorMessage = "Amount must be more than 0", ParseLimitsInInvariantCulture = true)]
         public required decimal Amount { get; set; }
 
         [Required]
