@@ -15,13 +15,13 @@
             <form asp-action="AddBudget" asp-controller="Client" method="post">
                 <div class="mb-3">
                     <label asp-for="Month" class="form-label" style="font-weight: 500">Current Month</label>
-                    <input asp-for="Month" type="text" class="form-control" readonly value="@DateTime.Now.ToString("MMMM")" />
+                    <input type="text" class="form-control" readonly value="@DateTime.Now.ToString("MMMM")" />
                     <span asp-validation-for="Month"></span>
                 </div>
                 <div class="mb-3">
                     <label asp-for="Amount" class="form-label" style="font-weight: 500">Budget Amount</label>
                     <input asp-for="Amount" type="number" class="form-control" placeholder="Enter budget amount" value="">
-                    <span asp-validation-for="Amount"></span>
+                    <span asp-validation-for="Amount" class="text-danger"></span>
                 </div>
                 <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Add budget</button>
             </form>

@@ -16,12 +16,12 @@ namespace DDAC_Project.Models
         public required string Name { get; set; }
 
         [Required(ErrorMessage = "Target amount is required")]
-        [RegularExpression(@"^[1-9]+$", ErrorMessage = "Target amount must be more than 0")]
+        [Range(typeof(decimal), "0,01", "79228162514264337593543950335", ErrorMessage = "Target amount must be more than 0")]
         [Column(TypeName = "decimal(18,2)")]
         public required decimal TargetAmount { get; set; }
 
 
         [ForeignKey("ClientId")]
-        public virtual required Client Client { get; set; }
+        public virtual Client? Client { get; set; }
     }
 }

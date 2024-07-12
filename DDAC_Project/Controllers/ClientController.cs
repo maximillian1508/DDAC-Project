@@ -369,12 +369,14 @@ namespace DDAC_Project.Controllers
                 })
                 .ToListAsync();
 
+            var client = await _context.Clients.FindAsync(clientId);
+
             ViewBag.NewGoal = new Goal
             {
                 Name = "",
                 TargetAmount = 0,
                 ClientId = clientId,
-                Client = await _context.Clients.FindAsync(clientId)
+                Client = client
             };
 
             return View(goals);
@@ -390,10 +392,9 @@ namespace DDAC_Project.Controllers
                 Console.WriteLine(clientId);
                 _context.Goals.Add(newGoal);
                 await _context.SaveChangesAsync();
-
                 return RedirectToAction("Goals");
             }
-            return View(newGoal);
+            return RedirectToAction("Goals", newGoal);
         }
 
         [Route("/edit-goal")]
@@ -418,12 +419,16 @@ namespace DDAC_Project.Controllers
         {
             try
             {
-                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
-                goal.ClientId = clientId;
-                _context.Goals.Update(goal);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Goals", "Client");
-                //return View("EditGoal", goal);
+                if (ModelState.IsValid)
+                {
+                    var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                    goal.ClientId = clientId;
+                    _context.Goals.Update(goal);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Goals", "Client");
+                }
+
+                return View("EditGoal", goal);
             }
             catch (Exception ex)
             {
@@ -449,31 +454,43 @@ namespace DDAC_Project.Controllers
 
         public async Task<IActionResult> AddBudget(Budget newBudget)
         {
-            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
-            newBudget.ClientId = clientId;
-            newBudget.Month = DateTime.Now;
-            _context.Budgets.Add(newBudget);
-            await _context.SaveChangesAsync();
+            if (ModelState.IsValid)
+            {
+                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                newBudget.ClientId = clientId;
+                newBudget.Month = DateTime.Now;
+                _context.Budgets.Add(newBudget);
+                await _context.SaveChangesAsync();
+            }
 
             return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> UpdateBudget(Budget newBudget)
         {
-            var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+            if (ModelState.IsValid)
+            {
+                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
 
-            var budgetId = await _context.Budgets
-                .Where(b => b.ClientId == clientId && b.Month.Month == DateTime.Now.Month && b.Month.Year == DateTime.Now.Year)
-                .Select(b => b.BudgetId)
-                .SingleOrDefaultAsync();
+                var budgetId = await _context.Budgets
+                    .Where(b => b.ClientId == clientId && b.Month.Month == DateTime.Now.Month && b.Month.Year == DateTime.Now.Year)
+                    .Select(b => b.BudgetId)
+                    .SingleOrDefaultAsync();
 
-            newBudget.BudgetId = budgetId;
-            newBudget.Month = DateTime.Now;
-            newBudget.ClientId = clientId;
+                newBudget.BudgetId = budgetId;
+                newBudget.Month = DateTime.Now;
+                newBudget.ClientId = clientId;
 
-            _context.Budgets.Update(newBudget);
-            await _context.SaveChangesAsync();
-
+                _context.Budgets.Update(newBudget);
+                await _context.SaveChangesAsync();
+            }
+            foreach (var modelState in ModelState.Values)
+            {
+                foreach (var error in modelState.Errors)
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
+            }
             return RedirectToAction("Index");
         }
 
@@ -551,12 +568,16 @@ namespace DDAC_Project.Controllers
         {
             try
             {
-                var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
-                category.ClientId = clientId;
-                _context.Categories.Update(category);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("ManageCategory", "Client");
-                //return View("EditCategory", category);
+                if (ModelState.IsValid)
+                {
+                    var clientId = Convert.ToInt32(HttpContext.Session.GetInt32("ClientId"));
+                    category.ClientId = clientId;
+                    _context.Categories.Update(category);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("ManageCategory", "Client");
+                }
+
+                return View("EditCategory", category);
             }
             catch (Exception ex)
             {

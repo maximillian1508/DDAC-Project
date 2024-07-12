@@ -4,19 +4,27 @@
     ViewData["Title"] = "Edit Category";
 }
 
-<div style="display: flex; flex-direction: column; ">
-    <h1 class="mb-4" style="text-align: center">Edit Category</h1>
-    <form asp-action="UpdateCategory" asp-controller="Client" method="post" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 50%; padding: 25px 20px; margin: 0 auto; ">
-        <div class="mb-3">
-            <label asp-for="CategoryId" class="form-label" style="font-weight: 500">CategoryId</label>
-            <input class="form-control" asp-for="CategoryId" readonly>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Name" class="form-label" style="font-weight: 500">Category Name</label>
-            <input class="form-control" asp-for="Name" placeholder="Enter category name">
-            <span asp-validation-for="Name"></span>
-        </div>
-        <input type="hidden" asp-for="Type" readonly/>
-        <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Update Goal</button>
-    </form>
-</div>
+<form asp-action="UpdateCategory" asp-controller="Client" method="post" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 50%; padding: 25px 20px; margin: 1em auto 0 auto; ">
+    <div style="display: flex; margin-bottom: 1em">
+        <h1 style="margin: 0; font-size: 1.75rem; width: fit-content">Edit Category</h1>
+        <a asp-action="ManageCategory" asp-controller="Client" style="margin-left: auto; color: black; font-size: 1.75rem; line-height:normal"><i class="fa-solid fa-xmark"></i></a>
+    </div>
+    <div class="mb-3">
+        <label asp-for="CategoryId" class="form-label" style="font-weight: 500">CategoryId</label>
+        <input class="form-control" asp-for="CategoryId" readonly>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label" style="font-weight: 500">Category Name</label>
+        <input class="form-control" asp-for="Name" placeholder="Enter category name">
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <input type="hidden" asp-for="Type" readonly />
+    <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Update Category</button>
+</form>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

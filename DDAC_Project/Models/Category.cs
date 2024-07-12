@@ -11,7 +11,7 @@ namespace DDAC_Project.Models
 
         public int ? ClientId { get; set; }
 
-        [Required(ErrorMessage="Category is required")]
+        [Required(ErrorMessage="Category Name is required")]
         public required string Name { get; set; }
 
         [Required]

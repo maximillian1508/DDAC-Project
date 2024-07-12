@@ -4,23 +4,25 @@
     ViewData["Title"] = "Edit Goal";
 }
 
-<div style="display: flex; flex-direction: column; ">
-    <h1 class="mb-4" style="text-align: center">Edit Goal</h1>
-    <form asp-action="UpdateGoal" asp-controller="Client" method="post" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 50%; padding: 25px 20px; margin: 0 auto; ">
-        <div class="mb-3">
-            <label asp-for="GoalId" class="form-label" style="font-weight: 500">Goal Id</label>
-            <input class="form-control" asp-for="GoalId" readonly>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Name" class="form-label" style="font-weight: 500">Goal Name</label>
-            <input class="form-control" asp-for="Name" placeholder="Enter goal name">
-            <span asp-validation-for="Name"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="TargetAmount" class="form-label" style="font-weight: 500">Target Amount</label>
-            <input asp-for="TargetAmount" type="number" class="form-control" placeholder="Enter target amount">
-            <span asp-validation-for="TargetAmount"></span>
-        </div>
-        <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Update Goal</button>
-    </form>
-</div>
+
+<form asp-action="UpdateGoal" asp-controller="Client" method="post" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 50%; padding: 25px 20px; margin: 1.5em auto 0 auto; ">
+    <div style="display: flex; margin-bottom: 1em">
+        <h1 style="margin: 0; font-size: 1.75rem; width: fit-content">Edit Goal</h1>
+        <a asp-action="Goals" asp-controller="Client" style="margin-left: auto; color: black; font-size: 1.75rem; line-height:normal"><i class="fa-solid fa-xmark"></i></a>
+    </div>
+    <div class="mb-3">
+        <label asp-for="GoalId" class="form-label" style="font-weight: 500">Goal Id</label>
+        <input class="form-control" asp-for="GoalId" readonly>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label" style="font-weight: 500">Goal Name</label>
+        <input class="form-control" asp-for="Name" placeholder="Enter goal name">
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="TargetAmount" class="form-label" style="font-weight: 500">Target Amount</label>
+        <input asp-for="TargetAmount" type="number" class="form-control" placeholder="Enter target amount">
+        <span asp-validation-for="TargetAmount" class="text-danger"></span>
+    </div>
+    <button type="submit" name="submit" class="btn btn-dark" style="width: 100%">Update Goal</button>
+</form>
