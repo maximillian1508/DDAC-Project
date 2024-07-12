@@ -9,6 +9,10 @@
     <div class="col-md-4">
         <section>
             <form id="account" method="post">
+                @if (Model.OnRegister == true)
+                {
+                    <p>Email Confirmation has been sent</p>
+                }
                 <h2 style="text-align: center">Log in to your account</h2>
                 <p style="text-align: center">or <a asp-page="./Register">register for a new account</a></p>
                 <hr />

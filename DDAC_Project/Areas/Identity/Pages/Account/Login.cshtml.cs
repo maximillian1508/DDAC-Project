@@ -48,6 +48,8 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
         /// </summary>
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
+        public bool OnRegister { get; set; }
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -91,7 +93,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
             public bool RememberMe { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public async Task OnGetAsync(string returnUrl = null, bool onRegister = false)
         {
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
@@ -106,6 +108,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             ReturnUrl = returnUrl;
+            OnRegister = onRegister;
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
