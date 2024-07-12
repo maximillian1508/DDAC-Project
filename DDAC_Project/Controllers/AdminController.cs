@@ -14,6 +14,9 @@ using DDAC_Project.Areas.Identity.Pages.Account;
 using static DDAC_Project.Controllers.AdvisorController;
 using Microsoft.AspNetCore.Authentication;
 using DDAC_Project.Constants;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using DDAC_Project.Validators;
 
 namespace DDAC_Project.Controllers
 {
@@ -61,24 +64,60 @@ namespace DDAC_Project.Controllers
 
         public class CreateAdminModel
         {
+            [Required(ErrorMessage = "First name is required")]
             public string FirstName { get; set; }
+
+            [Required(ErrorMessage = "Last name is required")]
             public string LastName { get; set; }
+
+            [Required(ErrorMessage = "Phone number is required")]
+            [RegularExpression(@"^[0-9]+$", ErrorMessage = "Phone number must contain only digits")]
             public string PhoneNumber { get; set; }
+
+            [Required(ErrorMessage = "Email is required")]
+            [EmailAddress(ErrorMessage = "Invalid email address")]
+            [UniqueEmail(ErrorMessage = "This email is already in use")]
             public string Email { get; set; }
+
+            [Required(ErrorMessage = "Password is required")]
+            [DataType(DataType.Password)]
             public string Password { get; set; }
+
+            [Required(ErrorMessage = "Confirm password is required")]
+            [DataType(DataType.Password)]
+            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
         }
 
         public class CreateAdvisorModel
         {
+            [Required(ErrorMessage = "First name is required")]
             public string FirstName { get; set; }
+
+            [Required(ErrorMessage = "Last name is required")]
             public string LastName { get; set; }
+
+            [Required(ErrorMessage = "Phone number is required")]
             public string PhoneNumber { get; set; }
+
+            [Required(ErrorMessage = "Email is required")]
+            [EmailAddress(ErrorMessage = "Invalid email address")]
+            [UniqueEmail(ErrorMessage = "This email is already in use")]
             public string Email { get; set; }
+
+            [Required(ErrorMessage = "Password is required")]
+            [DataType(DataType.Password)]
             public string Password { get; set; }
+
+            [Required(ErrorMessage = "Confirm password is required")]
+            [DataType(DataType.Password)]
+            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-            public string Specialization { get; set; }
-            public string YearOfExperience { get; set; }
+
+            public string? Specialization { get; set; }
+
+            [RegularExpression(@"^[0-9]+$", ErrorMessage = "Year of experience must contain only digits")]
+            public string? YearOfExperience { get; set; }
         }
 
         public class TotalAssetModel
@@ -224,21 +263,25 @@ namespace DDAC_Project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAdmin(CreateAdminModel admin)
         {
+            if (ModelState.IsValid)
+            {
+                var user = RegisterModel.CreateUser();
 
-            var user = RegisterModel.CreateUser();
+                user.FirstName = admin.FirstName;
+                user.LastName = admin.LastName;
+                user.PhoneNumber = admin.PhoneNumber;
+                user.Email = admin.Email;
+                user.EmailConfirmed = true;
+                user.UserType = "Admin";
 
-            user.FirstName = admin.FirstName;
-            user.LastName = admin.LastName;
-            user.PhoneNumber = admin.PhoneNumber;
-            user.Email = admin.Email;
-            user.EmailConfirmed = true;
-            user.UserType = "Admin";
+                await _userStore.SetUserNameAsync(user, admin.Email, CancellationToken.None);
+                await _userManager.CreateAsync(user, admin.Password);
+                await _userManager.AddToRoleAsync(user, Constants.UserRoles.Admin);
 
-            await _userStore.SetUserNameAsync(user, admin.Email, CancellationToken.None);
-            await _userManager.CreateAsync(user, admin.Password);
-            await _userManager.AddToRoleAsync(user, Constants.UserRoles.Admin);
+                return RedirectToAction("ManageUser");
+            }
 
-            return RedirectToAction("ManageUser");
+            return View(admin);
         }
 
         [Route("/add-advisor")]
@@ -253,37 +296,40 @@ namespace DDAC_Project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAdvisor(CreateAdvisorModel advisor)
         {
-
-            var user = RegisterModel.CreateUser();
-
-            user.FirstName = advisor.FirstName;
-            user.LastName = advisor.LastName;
-            user.PhoneNumber = advisor.PhoneNumber;
-            user.Email = advisor.Email;
-            user.EmailConfirmed = true;
-            user.UserType = "Advisor";
-
-            await _userStore.SetUserNameAsync(user, advisor.Email, CancellationToken.None);
-            var result = await _userManager.CreateAsync(user, advisor.Password);
-            await _userManager.AddToRoleAsync(user, Constants.UserRoles.Advisor);
-
-            if (result.Succeeded)
+            if (ModelState.IsValid)
             {
-                var userId = await _userManager.GetUserIdAsync(user);
+                var user = RegisterModel.CreateUser();
 
-                var newAdvisor = new Advisor
+                user.FirstName = advisor.FirstName;
+                user.LastName = advisor.LastName;
+                user.PhoneNumber = advisor.PhoneNumber;
+                user.Email = advisor.Email;
+                user.EmailConfirmed = true;
+                user.UserType = "Advisor";
+
+                await _userStore.SetUserNameAsync(user, advisor.Email, CancellationToken.None);
+                var result = await _userManager.CreateAsync(user, advisor.Password);
+                await _userManager.AddToRoleAsync(user, Constants.UserRoles.Advisor);
+
+                if (result.Succeeded)
                 {
-                    User = user,
-                    UserId = userId,
-                    Specialization = advisor.Specialization,
-                    YearsOfExperience = advisor.YearOfExperience
-                    //add specialization, year of experience
-                };
+                    var userId = await _userManager.GetUserIdAsync(user);
 
-                await _context.AddAsync(newAdvisor);
-                await _context.SaveChangesAsync();
+                    var newAdvisor = new Advisor
+                    {
+                        User = user,
+                        UserId = userId,
+                        Specialization = advisor.Specialization,
+                        YearsOfExperience = advisor.YearOfExperience
+                        //add specialization, year of experience
+                    };
+
+                    await _context.AddAsync(newAdvisor);
+                    await _context.SaveChangesAsync();
+                }
+                return RedirectToAction("ManageUser");
             }
-            return RedirectToAction("ManageUser");
+            return View(advisor);
         }
 
     }

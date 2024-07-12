@@ -55,3 +55,8 @@
     <button id="registerSubmit" type="submit" class="w-100 btn btn-dark">Add a New Advisor</button>
 </form>
 
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
