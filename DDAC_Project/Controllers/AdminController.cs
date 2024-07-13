@@ -87,6 +87,28 @@ namespace DDAC_Project.Controllers
             [DataType(DataType.Password)]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
+        }      
+        
+        public class EditAdminModel
+        {
+            [Required(ErrorMessage = "First name is required")]
+            public string FirstName { get; set; }
+
+            [Required(ErrorMessage = "Last name is required")]
+            public string LastName { get; set; }
+
+            [Required(ErrorMessage = "Phone number is required")]
+            [RegularExpression(@"^[0-9]+$", ErrorMessage = "Phone number must contain only digits")]
+            public string PhoneNumber { get; set; }
+
+            [Required(ErrorMessage = "Email is required")]
+            [EmailAddress(ErrorMessage = "Invalid email address")]
+            public string Email { get; set; }
+
+            [DataType(DataType.Password)]
+            public string? Password { get; set; }
+
+            public string ?UserId { get; set; }
         }
 
         public class CreateAdvisorModel
@@ -118,6 +140,34 @@ namespace DDAC_Project.Controllers
 
             [RegularExpression(@"^[0-9]+$", ErrorMessage = "Year of experience must contain only digits")]
             public string? YearOfExperience { get; set; }
+        }       
+        
+        public class EditAdvisorModel
+        {
+            [Required(ErrorMessage = "First name is required")]
+            public string FirstName { get; set; }
+
+            [Required(ErrorMessage = "Last name is required")]
+            public string LastName { get; set; }
+
+            [Required(ErrorMessage = "Phone number is required")]
+            public string PhoneNumber { get; set; }
+
+            [Required(ErrorMessage = "Email is required")]
+            [EmailAddress(ErrorMessage = "Invalid email address")]
+            public string Email { get; set; }
+
+            [DataType(DataType.Password)]
+            public string ? Password { get; set; }
+
+            public string? Specialization { get; set; }
+
+            [RegularExpression(@"^[0-9]+$", ErrorMessage = "Year of experience must contain only digits")]
+            public string? YearOfExperience { get; set; }
+
+            public string? UserId { get; set; }
+
+            public int? AdvisorId { get; set; }
         }
 
         public class TotalAssetModel
@@ -284,6 +334,111 @@ namespace DDAC_Project.Controllers
             return View(admin);
         }
 
+        [Route("/edit-admin")]
+        [HttpGet]
+        public async Task<IActionResult> EditAdmin(string? UserId)
+        {
+            if (string.IsNullOrEmpty(UserId))
+            {
+                return NotFound();
+            }
+            var admin = await _userManager.FindByIdAsync(UserId);
+
+            if (admin == null)
+            {
+                return NotFound();
+            }
+
+            var model = new EditAdminModel
+            {
+                UserId = admin.Id,
+                Email = admin.Email,
+                PhoneNumber = admin.PhoneNumber,
+                FirstName = admin.FirstName,
+                LastName = admin.LastName
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateAdmin(EditAdminModel admin)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("EditAdmin", admin);
+            }
+
+            var user = await _userManager.FindByIdAsync(admin.UserId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.PhoneNumber = admin.PhoneNumber;
+            user.FirstName = admin.FirstName;
+            user.LastName = admin.LastName;
+
+            // Check if email has changed
+            if (user.Email != admin.Email)
+            {
+                // Check if the new email is already in use
+                var existingUser = await _userManager.FindByEmailAsync(admin.Email);
+                if (existingUser != null && existingUser.Id != user.Id)
+                {
+                    ModelState.AddModelError("Email", "This email is already in use");
+                    return View("EditAdmin", admin);
+                }
+
+                // Update email
+                var setEmailResult = await _userManager.SetEmailAsync(user, admin.Email);
+                if (!setEmailResult.Succeeded)
+                {
+                    foreach (var error in setEmailResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View("EditAdmin", admin);
+                }
+
+                // Update username
+                await _userManager.SetUserNameAsync(user, admin.Email);
+
+                var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user); 
+                await _userManager.ConfirmEmailAsync(user,confirmToken);
+            }
+
+            if (!String.IsNullOrEmpty(admin.Password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var passwordChangeResult = await _userManager.ResetPasswordAsync(user, token, admin.Password);
+
+                if (!passwordChangeResult.Succeeded)
+                {
+                    foreach (var error in passwordChangeResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View("EditAdmin", admin);
+                }
+            }
+            // Update other properties as needed
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                return RedirectToAction("ManageUser", "Admin");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View("EditAdmin", admin);
+        }
+
         [Route("/add-advisor")]
         public IActionResult AddAdvisor()
         {
@@ -330,6 +485,122 @@ namespace DDAC_Project.Controllers
                 return RedirectToAction("ManageUser");
             }
             return View(advisor);
+        }
+
+        [Route("/edit-advisor")]
+        public async Task<IActionResult> EditAdvisor(string? UserId)
+        {
+            if (string.IsNullOrEmpty(UserId))
+            {
+                return NotFound();
+            }
+            var user = await _userManager.FindByIdAsync(UserId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var advisorData = await _context.Advisors.Where(a => a.UserId == UserId).FirstOrDefaultAsync();
+
+            var advisor = new EditAdvisorModel
+            {
+                AdvisorId = advisorData.AdvisorId,
+                UserId = user.Id,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                YearOfExperience = advisorData.YearsOfExperience,
+                Specialization = advisorData.Specialization 
+            };
+
+            return View(advisor);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateAdvisor(EditAdvisorModel advisor)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("EditAdvisor", advisor);
+            }
+
+            var user = await _userManager.FindByIdAsync(advisor.UserId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.PhoneNumber = advisor.PhoneNumber;
+            user.FirstName = advisor.FirstName;
+            user.LastName = advisor.LastName;
+
+            // Check if email has changed
+            if (user.Email != advisor.Email)
+            {
+                // Check if the new email is already in use
+                var existingUser = await _userManager.FindByEmailAsync(advisor.Email);
+                if (existingUser != null && existingUser.Id != user.Id)
+                {
+                    ModelState.AddModelError("Email", "This email is already in use");
+                    return View("EditAdvisor", advisor);
+                }
+
+                // Update email
+                var setEmailResult = await _userManager.SetEmailAsync(user, advisor.Email);
+                if (!setEmailResult.Succeeded)
+                {
+                    foreach (var error in setEmailResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View("EditAdvisor", advisor);
+                }
+
+                // Update username
+                await _userManager.SetUserNameAsync(user, advisor.Email);
+
+                var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                await _userManager.ConfirmEmailAsync(user, confirmToken);
+            }
+
+            if (!String.IsNullOrEmpty(advisor.Password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var passwordChangeResult = await _userManager.ResetPasswordAsync(user, token, advisor.Password);
+
+                if (!passwordChangeResult.Succeeded)
+                {
+                    foreach (var error in passwordChangeResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View("EditAdvisor", advisor);
+                }
+            }
+
+            var adv = await _context.Advisors.FindAsync(advisor.AdvisorId);
+            adv.Specialization = advisor.Specialization;
+            adv.YearsOfExperience = advisor.YearOfExperience;
+            _context.Advisors.Update(adv);
+            await _context.SaveChangesAsync();
+
+
+            // Update other properties as needed
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                return RedirectToAction("ManageUser", "Admin");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View("EditAdvisor", advisor);
         }
 
     }

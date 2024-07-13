@@ -1,0 +1,59 @@
+﻿@model DDAC_Project.Controllers.AdminController.EditAdvisorModel
+
+@{
+    ViewData["Title"] = "Edit Advisor";
+}
+
+<form asp-action="UpdateAdvisor" asp-controller="Admin" method="post" class="row" style="border: solid 1.5px lightgrey; border-radius: 15px; height: fit-content; width: 70%; padding: 25px 20px; margin: 2em auto">
+    <div class="mb-3" style="display: flex;">
+        <h1 style="margin: 0; font-size: 1.75rem; width: fit-content">Add a New Advisor</h1>
+        <a asp-action="ManageUser" asp-controller="Admin" style="margin-left: auto; color: black; font-size: 1.75rem; line-height:normal"><i class="fa-solid fa-xmark"></i></a>
+    </div>
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <input asp-for="UserId" hidden/>
+    <input asp-for="AdvisorId" hidden/>
+    <div class="col-md-6 mb-3">
+        <label asp-for="FirstName">First Name</label>
+        <input asp-for="FirstName" class="form-control" autocomplete="given-name" aria-required="true" placeholder="John" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="LastName">Last Name</label>
+        <input asp-for="LastName" class="form-control" autocomplete="family-name" aria-required="true" placeholder="Doe" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+
+    <div class="col-12 mb-3">
+        <label asp-for="PhoneNumber">Phone Number</label>
+        <input asp-for="PhoneNumber" type="tel" class="form-control" autocomplete="tel" aria-required="true" placeholder="+1 (555) 123-4567" />
+        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+    </div>
+    <div class="col-8 mb-3">
+        <label asp-for="Specialization">Specialization</label>
+        <input asp-for="Specialization" type="text" class="form-control" aria-required="true" placeholder="Finance" />
+        <span asp-validation-for="Specialization" class="text-danger"></span>
+    </div>
+    <div class="col-4 mb-3">
+        <label asp-for="YearOfExperience">Year of Experience</label>
+        <input asp-for="YearOfExperience" class="form-control" type="number" aria-required="true" placeholder="2" />
+        <span asp-validation-for="YearOfExperience" class="text-danger"></span>
+    </div>
+    <div class="col-12 mb-3">
+        <label asp-for="Email">Email</label>
+        <input asp-for="Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="col-12 mb-3">
+        <label asp-for="Password">New Password</label>
+        <input asp-for="Password" class="form-control" type="password" autocomplete="new-password" aria-required="true" placeholder="Enter a new Password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <button id="registerSubmit" type="submit" class="w-100 btn btn-dark">Update Advisor</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
