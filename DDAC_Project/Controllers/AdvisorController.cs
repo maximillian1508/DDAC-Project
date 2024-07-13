@@ -242,7 +242,7 @@ namespace DDAC_Project.Controllers
                 {
                     CommentText = c.CommentText,
                     Date = c.Date,
-                    AdvisorName = c.Advisor.User.FirstName + c.Advisor.User.LastName
+                    AdvisorName = c.Advisor.User.FirstName + " " + c.Advisor.User.LastName
                 })
                 .ToListAsync();
 

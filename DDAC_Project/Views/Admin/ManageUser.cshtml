@@ -33,6 +33,7 @@
                     <th>Email</th>
                     <th>Phone Number</th>
                     <th>User Type</th>
+                    <th>Assigned Advisor</th>
                     <th></th>
                     <th></th>
                 </tr>
@@ -46,6 +47,16 @@
                         <td>@user.Email</td>
                         <td>@user.PhoneNumber</td>
                         <td>@user.UserType</td>
+                        @if (user.UserType != "Client")
+                        {
+                            <td>Not a client</td>
+                        } else if (String.IsNullOrEmpty(user.AdvisorEmail))
+                        {
+                            <td class="text-danger">---</td>
+                        } else
+                        {
+                            <td>@user.AdvisorEmail</td>
+                        }
                         @if (user.Email == "admin@fiscella.com" || user.Email == "advisor@fiscella.com")
                         {
                             <td style="text-align: center; vertical-align:middle">
@@ -58,6 +69,7 @@
                             if (user.UserType == "Client")
                             {
                                 <td style="text-align: center; vertical-align:middle">
+                                    <a asp-action="EditClient" asp-controller="Admin" asp-route-UserId="@user.UserId"><i class="fa-solid fa-pen-to-square"></i></a>
                                 </td>
                             } else if (user.UserType == "Admin")
                             {

@@ -17,6 +17,7 @@ using DDAC_Project.Constants;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using DDAC_Project.Validators;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DDAC_Project.Controllers
 {
@@ -60,6 +61,8 @@ namespace DDAC_Project.Controllers
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public string UserType { get; set; }
+
+            public string AdvisorEmail { get; set; }
         }
 
         public class CreateAdminModel
@@ -87,8 +90,8 @@ namespace DDAC_Project.Controllers
             [DataType(DataType.Password)]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-        }      
-        
+        }
+
         public class EditAdminModel
         {
             [Required(ErrorMessage = "First name is required")]
@@ -108,7 +111,7 @@ namespace DDAC_Project.Controllers
             [DataType(DataType.Password)]
             public string? Password { get; set; }
 
-            public string ?UserId { get; set; }
+            public string? UserId { get; set; }
         }
 
         public class CreateAdvisorModel
@@ -120,6 +123,7 @@ namespace DDAC_Project.Controllers
             public string LastName { get; set; }
 
             [Required(ErrorMessage = "Phone number is required")]
+            [RegularExpression(@"^[0-9]+$", ErrorMessage = "Phone number must contain only digits")]
             public string PhoneNumber { get; set; }
 
             [Required(ErrorMessage = "Email is required")]
@@ -140,8 +144,8 @@ namespace DDAC_Project.Controllers
 
             [RegularExpression(@"^[0-9]+$", ErrorMessage = "Year of experience must contain only digits")]
             public string? YearOfExperience { get; set; }
-        }       
-        
+        }
+
         public class EditAdvisorModel
         {
             [Required(ErrorMessage = "First name is required")]
@@ -151,6 +155,7 @@ namespace DDAC_Project.Controllers
             public string LastName { get; set; }
 
             [Required(ErrorMessage = "Phone number is required")]
+            [RegularExpression(@"^[0-9]+$", ErrorMessage = "Phone number must contain only digits")]
             public string PhoneNumber { get; set; }
 
             [Required(ErrorMessage = "Email is required")]
@@ -158,7 +163,7 @@ namespace DDAC_Project.Controllers
             public string Email { get; set; }
 
             [DataType(DataType.Password)]
-            public string ? Password { get; set; }
+            public string? Password { get; set; }
 
             public string? Specialization { get; set; }
 
@@ -168,6 +173,31 @@ namespace DDAC_Project.Controllers
             public string? UserId { get; set; }
 
             public int? AdvisorId { get; set; }
+        }
+
+        public class EditClientModel
+        {
+            [Required(ErrorMessage = "First name is required")]
+            public string FirstName { get; set; }
+
+            [Required(ErrorMessage = "Last name is required")]
+            public string LastName { get; set; }
+
+            [Required(ErrorMessage = "Phone number is required")]
+            [RegularExpression(@"^[0-9]+$", ErrorMessage = "Phone number must contain only digits")]
+            public string PhoneNumber { get; set; }
+
+            [Required(ErrorMessage = "Email is required")]
+            [EmailAddress(ErrorMessage = "Invalid email address")]
+            public string Email { get; set; }
+
+            [DataType(DataType.Password)]
+            public string? Password { get; set; }
+
+            public string? UserId { get; set; }
+
+            public int? AdvisorId { get; set; }
+            public int? ClientId { get; set; }
         }
 
         public class TotalAssetModel
@@ -202,12 +232,13 @@ namespace DDAC_Project.Controllers
                 .CountAsync();
 
             List<TotalAssetModel> totalAssetsPerUser = await _context.Transactions
-                .GroupBy(t => new 
-                { ClientUserId = t.Client.UserId, 
-                  ClientEmail = t.Client.User.Email, 
-                  AdvisorEmail = t.Client.Advisor.User.Email,
-                  ClientFirstName = t.Client.User.FirstName,
-                  ClientLastName = t.Client.User.LastName
+                .GroupBy(t => new
+                {
+                    ClientUserId = t.Client.UserId,
+                    ClientEmail = t.Client.User.Email,
+                    AdvisorEmail = t.Client.Advisor.User.Email,
+                    ClientFirstName = t.Client.User.FirstName,
+                    ClientLastName = t.Client.User.LastName
                 })
                 .Select(g => new TotalAssetModel
                 {
@@ -246,6 +277,7 @@ namespace DDAC_Project.Controllers
                 return Challenge();
             }
 
+
             List<ManageUserViewModel> userData = await _context.Users
                 .Where(u => u.Id != user.Id)
                 .Select(u => new ManageUserViewModel
@@ -255,8 +287,13 @@ namespace DDAC_Project.Controllers
                     PhoneNumber = u.PhoneNumber,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
-                    UserType = u.UserType
-
+                    UserType = u.UserType,
+                    AdvisorEmail = u.UserType == "Client"
+                                    ? _context.Clients
+                                        .Where(c => c.UserId == u.Id)
+                                        .Select(c => c.Advisor.User.Email)
+                                        .FirstOrDefault()
+                                    : null
                 })
                 .ToListAsync();
 
@@ -405,8 +442,8 @@ namespace DDAC_Project.Controllers
                 // Update username
                 await _userManager.SetUserNameAsync(user, admin.Email);
 
-                var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user); 
-                await _userManager.ConfirmEmailAsync(user,confirmToken);
+                var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                await _userManager.ConfirmEmailAsync(user, confirmToken);
             }
 
             if (!String.IsNullOrEmpty(admin.Password))
@@ -512,7 +549,7 @@ namespace DDAC_Project.Controllers
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 YearOfExperience = advisorData.YearsOfExperience,
-                Specialization = advisorData.Specialization 
+                Specialization = advisorData.Specialization
             };
 
             return View(advisor);
@@ -601,6 +638,83 @@ namespace DDAC_Project.Controllers
             }
 
             return View("EditAdvisor", advisor);
+        }
+
+        [Route("/edit-client")]
+        public async Task<IActionResult> EditClient(string? UserId)
+        {
+            if (string.IsNullOrEmpty(UserId))
+            {
+                return NotFound();
+            }
+            var user = await _userManager.FindByIdAsync(UserId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var clientData = await _context.Clients.Where(a => a.UserId == UserId).FirstOrDefaultAsync();
+            var currentAdvisorId = clientData?.AdvisorId;
+
+            var advisorList = await _context.Advisors
+                .GroupJoin(_context.Clients,
+                    advisor => advisor.AdvisorId,
+                    client => client.AdvisorId,
+                    (advisor, clients) => new { Advisor = advisor, ClientCount = clients.Count() })
+                .Where(x => x.ClientCount < 3 || x.Advisor.AdvisorId == currentAdvisorId)
+                .Select(x => new SelectListItem
+                {
+                    Value = x.Advisor.AdvisorId.ToString(),
+                    Text = $"{x.Advisor.User.FirstName} {x.Advisor.User.LastName}"
+                })
+                .ToListAsync();
+
+            advisorList.Insert(0, new SelectListItem { Value = "", Text = "" });
+
+            ViewBag.AdvisorList = advisorList;
+
+            var client = new EditClientModel
+            {
+                ClientId = clientData.ClientId,
+                AdvisorId = clientData.AdvisorId,
+                UserId = user.Id,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+            };
+
+            return View(client);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateClient(EditClientModel client)
+        {
+            var user = await _userManager.FindByIdAsync(client.UserId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                var cli = await _context.Clients.FindAsync(client.ClientId);
+                cli.AdvisorId = client.AdvisorId;
+                _context.Clients.Update(cli);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("ManageUser", "Admin");
+            }
+
+            foreach (var modelState in ModelState.Values)
+            {
+                foreach (var error in modelState.Errors)
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
+            }
+            return View("EditClient", client);
         }
 
     }
