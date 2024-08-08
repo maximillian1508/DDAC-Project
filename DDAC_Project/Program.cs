@@ -7,9 +7,6 @@ using DDAC_Project.Models;
 using DDAC_Project;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using ASPNETCoreIdentityDemo.Models;
-using Amazon.SimpleNotificationService;
-using Amazon.Extensions.NETCore.Setup;
-using DDAC_Project.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DDAC_ProjectContextConnection") ?? throw new InvalidOperationException("Connection string 'DDAC_ProjectContextConnection' not found.");
@@ -27,14 +24,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireClientRole", policy => policy.RequireRole(UserRoles.Client));
 });
 
-// Add AWS configuration
-builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-builder.Services.AddAWSService<IAmazonSimpleNotificationService>();
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<ISenderEmail, EmailSender>();
-builder.Services.AddTransient<SNSService>();
 builder.Services.AddRazorPages();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
