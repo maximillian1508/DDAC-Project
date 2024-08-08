@@ -2,6 +2,7 @@
 using DDAC_Project.Areas.Identity.Pages.Account.Manage;
 using DDAC_Project.Data;
 using DDAC_Project.Models;
+using DDAC_Project.Services;
 using DDAC_Project.Views.Advisor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,11 +20,13 @@ namespace DDAC_Project.Controllers
         private readonly DDAC_ProjectContext _context;
         private readonly UserManager<DDAC_ProjectUser> _userManager;
         private readonly SignInManager<DDAC_ProjectUser> _signInManager;
-        public AdvisorController(DDAC_ProjectContext context, UserManager<DDAC_ProjectUser> userManager, SignInManager<DDAC_ProjectUser> signInManager)
+        private readonly SNSService _snsService;
+        public AdvisorController(DDAC_ProjectContext context, UserManager<DDAC_ProjectUser> userManager, SignInManager<DDAC_ProjectUser> signInManager, SNSService snsService)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
+            _snsService = snsService;
         }
 
         public class IndexViewModel
@@ -342,6 +345,12 @@ namespace DDAC_Project.Controllers
             if (client == null || advisor == null)
             {
                 return Json(new { success = false, message = "Client or Advisor not found." });
+            } else
+            {
+                var subject = "New Comment on Your Financial Analysis";
+                var message = $"Dear {client.User.FirstName},\n\nA new comment has been added to your financial analysis by advisor {advisor.User.FirstName} {advisor.User.LastName}.\n\nPlease log in to view the comment.\n\nBest regards,\nYour Financial Management Team";
+
+                await _snsService.SendEmailNotification(client.User.Email, subject, message);
             }
 
             var comment = new Comment
