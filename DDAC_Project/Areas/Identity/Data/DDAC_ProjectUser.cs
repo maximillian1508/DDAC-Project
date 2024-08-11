@@ -16,5 +16,7 @@ public class DDAC_ProjectUser : IdentityUser
     public string ? LastName { get; set; }
 
     public string ? UserType { get; set; }
+    
+    public string ? ProfileImage { get; set; }
 }
 

@@ -7,6 +7,8 @@ using DDAC_Project.Models;
 using DDAC_Project;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using ASPNETCoreIdentityDemo.Models;
+using Amazon.S3;
+using Amazon.Extensions.NETCore.Setup;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DDAC_ProjectContextConnection") ?? throw new InvalidOperationException("Connection string 'DDAC_ProjectContextConnection' not found.");
@@ -26,6 +28,8 @@ builder.Services.AddAuthorization(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddTransient<ISenderEmail, EmailSender>();
 builder.Services.AddRazorPages();
 builder.Services.AddDistributedMemoryCache();

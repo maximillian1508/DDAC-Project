@@ -1,15 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
-
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using DDAC_Project.Areas.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Amazon.S3;
+using Amazon.S3.Model;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
 {
@@ -17,45 +18,40 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<DDAC_ProjectUser> _userManager;
         private readonly SignInManager<DDAC_ProjectUser> _signInManager;
+        private readonly IAmazonS3 _s3Client;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<IndexModel> _logger;
 
         public IndexModel(
             UserManager<DDAC_ProjectUser> userManager,
-            SignInManager<DDAC_ProjectUser> signInManager)
+            SignInManager<DDAC_ProjectUser> signInManager,
+            IAmazonS3 s3Client,
+            IConfiguration configuration,
+            ILogger<IndexModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _s3Client = s3Client;
+            _configuration = configuration;
+            _logger = logger;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string Username { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
+            [Display(Name = "Profile Image")]
+            public string?  ProfileImage { get; set; }
+
+            [Display(Name = "Image Upload")]
+            public Microsoft.AspNetCore.Http.IFormFile ? ImageUpload { get; set; }
+
             [Required(ErrorMessage = "First name is required.")]
             [Display(Name = "First Name")]
             public string FirstName { get; set; }
@@ -64,10 +60,9 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
             [Display(Name = "Last Name")]
             public string LastName { get; set; }
 
-            [Required(ErrorMessage = "Phone number is required.")]
             [Phone(ErrorMessage = "Invalid phone number format.")]
             [Display(Name = "Phone Number")]
-            public string PhoneNumber { get; set; }
+            public string ? PhoneNumber { get; set; }
         }
 
         private async Task LoadAsync(DDAC_ProjectUser user)
@@ -79,6 +74,7 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
+                ProfileImage = user.ProfileImage,
                 PhoneNumber = phoneNumber,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
@@ -88,11 +84,9 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (!_signInManager.IsSignedIn(User) && user == null)
+            if (user == null)
             {
-                return Challenge();
-                //return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
             await LoadAsync(user);
@@ -124,7 +118,8 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
                 }
             }
 
-            if (Input.FirstName != user.FirstName) { 
+            if (Input.FirstName != user.FirstName)
+            {
                 user.FirstName = Input.FirstName;
             }
 
@@ -132,11 +127,94 @@ namespace DDAC_Project.Areas.Identity.Pages.Account.Manage
             {
                 user.LastName = Input.LastName;
             }
-            await _userManager.UpdateAsync(user);
+
+            _logger.LogInformation($"Form file count: {Request.Form.Files.Count}");
+
+            if (Request.Form.Files.Count > 0)
+            {
+                var file = Request.Form.Files[0];
+                _logger.LogInformation($"File name: {file.FileName}, File size: {file.Length}");
+
+                if (file != null && file.Length > 0)
+                {
+                    try
+                    {
+                        var imageKey = await UploadImageToS3(file);
+                        user.ProfileImage = imageKey;
+                        _logger.LogInformation($"Image uploaded successfully. Image key: {imageKey}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error uploading image to S3");
+                        StatusMessage = "Error uploading image. Please try again.";
+                        return RedirectToPage();
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("File was null or empty");
+                }
+            }
+            else
+            {
+                _logger.LogInformation("No file was uploaded");
+            }
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                _logger.LogError("Failed to update user. Errors: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+                StatusMessage = "Unexpected error when trying to update user profile.";
+                return RedirectToPage();
+            }
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
         }
+
+        private async Task<string> UploadImageToS3(IFormFile file)
+        {
+            var bucketName = _configuration["AWS:BucketName"];
+            var keyName = $"profile-images/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+
+            _logger.LogInformation($"Attempting to upload file {file.FileName} to S3 bucket {bucketName} with key {keyName}");
+
+            using (var ms = new MemoryStream())
+            {
+                await file.CopyToAsync(ms);
+                ms.Position = 0;
+                var request = new PutObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = keyName,
+                    InputStream = ms,
+                    ContentType = file.ContentType,
+                    CannedACL = S3CannedACL.PublicRead
+                };
+
+                try
+                {
+                    var response = await _s3Client.PutObjectAsync(request);
+                    _logger.LogInformation($"File uploaded successfully. ETag: {response.ETag}");
+                }
+                catch (AmazonS3Exception ex)
+                {
+                    _logger.LogError(ex, "Error uploading to S3: {ErrorMessage}", ex.Message);
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unexpected error uploading to S3");
+                    throw;
+                }
+            }
+
+            var fileUrl = $"https://{bucketName}.s3.amazonaws.com/{keyName}";
+            _logger.LogInformation($"File URL: {fileUrl}");
+            return fileUrl;
+        }
+
+
     }
 }
